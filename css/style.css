@@ -1,0 +1,15 @@
+canvas{
+	margin: auto;
+}
+
+div{
+	padding: 0px;
+}
+
+
+div p{
+	color: #884691;
+	margin: 0px;
+	text-align: center;
+	font-size: 30px;
+}
