@@ -122,7 +122,7 @@ var Game = {
         scoreText.text = 'Score: ' + score;
         timeText.text = 'Time: ' + time;
         fuelText.text = 'Fuel: ' + player.fuel;
-        altiText.text = 'Altitude: ' + parseInt(player.y);
+        altiText.text = 'Altitude: ' + parseInt(783 - player.y);
         speedXText.text = 'Horizontal Speed: ' + parseInt(player.body.velocity.x);
         speedYText.text = 'Vertical Speed: ' + parseInt(player.body.velocity.y);
 
