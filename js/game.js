@@ -30,16 +30,16 @@ var Game = {
 
     create: function () {
 
+        game.world.setBounds(0, 0, 1600, 900);
         //set sprites 
-        bg = game.add.tileSprite(0, 0, 3200, 1800, 'bg');
-        //bg.anchor.setTo(0.5, 0.5);
-
-        ground = game.add.sprite(game.world.centerX, game.world.centerY, 'ground');
-        ground.anchor.setTo(0.5, 0.5);
+        bg = game.add.tileSprite(0, 0, 1600, 900, 'bg');
+        //bg = game.add.sprite(0, 0, 'bg');
+        ground = game.add.tileSprite(0, 0, 1600, 900, 'ground');
+        //ground = game.add.sprite(0, 0, 'ground');
 
         player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
         player.anchor.setTo(0.5, 0.5); 
-        player.fuel = 900;
+        player.fuel = 1000;
         player.maxSpeed = 30;
         player.maxSpeedX = 30;
         player.maxSpeedY = 30;
@@ -58,9 +58,8 @@ var Game = {
         // ground.physicsBodyType = Phaser.Physics.P2JS;
 
         game.physics.enable(player, Phaser.Physics.ARCADE);
-        game.physics.enable(ground, Phaser.Physics.ARCADE);
-
-
+        game.physics.enable(ground, Phaser.Physics.ARCADE); 
+        player.body.gravity.y = 10;
         ground.body.immovable = true;
 
         //init input
@@ -68,11 +67,17 @@ var Game = {
 
         //init text
         scoreText = game.add.text(16, 16, 'Score: 0', {fontSize:'24px', fill:'#eeeeee'});
+        scoreText.fixedToCamera = true;
         timeText = game.add.text(16, 48, 'Time: 0', {fontSize:'24px', fill:'#eeeeee'});
+        timeText.fixedToCamera = true;
         fuelText = game.add.text(16, 80, 'Fuel: 0', {fontSize:'24px', fill:'#eeeeee'});
+        fuelText.fixedToCamera = true;
         altiText = game.add.text(150, 16, 'Altitude: 0', {fontSize:'24px', fill:'#eeeeee'});
+        altiText.fixedToCamera = true;
         speedXText = game.add.text(150, 48, 'Horizontal Speed: 0', {fontSize:'24px', fill:'#eeeeee'});
+        speedXText.fixedToCamera = true;
         speedYText = game.add.text(150, 80, 'Vertical Speed: 0', {fontSize:'24px', fill:'#eeeeee'});
+        speedYText.fixedToCamera = true;
 
         //init particle
         emitter = game.add.emitter(player.x, player.y, 100);
@@ -81,8 +86,7 @@ var Game = {
         emitter.maxParticleScale = 1.2;
         emitter.bounce.y = 0.5;
         emitter.gravity = 0;
-        emitter.start(false, 200, 5, 0, false);
-     
+        emitter.start(false, 200, 5, 0, false);     
 
     },
 
@@ -92,8 +96,7 @@ var Game = {
         if(game.physics.arcade.collide(player, ground)){
             //console.log("collision");
             //gameOver();
-        }
-        
+        }        
 
         //input
         if(input.left.isDown){
@@ -162,6 +165,10 @@ var Game = {
 
         //camera
         game.camera.follow(player);
+
+        //check gameover
+        if(player.fuel <= 0)
+            game.state.start('Over');
     }
 };
 
