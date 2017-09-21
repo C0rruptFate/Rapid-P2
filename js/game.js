@@ -8,9 +8,9 @@ var timer;
 
 //texts
 var scoreText;
-var timeText;
+//var timeText;
 var fuelText;
-var altiText;
+//var altiText;
 var speedXText;
 var speedYText;
 
@@ -27,26 +27,32 @@ var Game = {
 
     preload: function () {
 
-        game.load.image('bg', 'images/Art/Environment/sky_background.png');
-        game.load.image('ground', 'images/Art/Environment/ground.png');
-        game.load.image('player', 'images/Art/Player/player.png');  
+        game.load.image('bg', 'images/Art/Environment/grey_background.png');
+        game.load.image('ground', 'images/Art/Environment/Sides.png');
+        game.load.image('player', 'images/Art/Player/PLA_Default');  
         game.load.image('particle', 'images/particle.png');
+
+        game.load.physics('groundPolData', 'js/groundPolData.json');
 
     },
 
     create: function () {
 
-        game.world.setBounds(0, 0, 1600, 900);
+        game.world.setBounds(0, 0, 1600, 10240);
         //set sprites 
-        bg = game.add.tileSprite(0, 0, 1600, 900, 'bg');
-        ground = game.add.tileSprite(0, 0, 1600, 900, 'ground');
-        player = game.add.sprite(200, 200, 'player');
+        bg = game.add.tileSprite(0, 0, 1600, 10240, 'bg');
+        ground = game.add.tileSprite(0, 0, 1600, 10240, 'ground');
+        //ground.anchor.setTo(0.5, 0);
+        player = game.add.sprite(800, 200, 'player');
 
         //init physics
         game.physics.startSystem(Phaser.Physics.P2JS);
         //game.physics.p2.setImpactEvents(true);
 
         game.physics.enable(player, Phaser.Physics.P2JS);
+        //game.physics.enable(ground, Phaser.Physics.P2JS);
+        //ground.body.clearShapes();
+        //ground.body.loadPolygon('groundPolData', 'ground');
         //game.physics.enable(ground, Phaser.Physics.P2JS); 
         player.body.gravity.y = 5;
         // player.body.clearShapes();
@@ -86,12 +92,12 @@ var Game = {
         //init text
         scoreText = game.add.text(16, 16, 'Score: 0', {fontSize:'24px', fill:'#eeeeee'});
         scoreText.fixedToCamera = true;
-        timeText = game.add.text(16, 48, 'Time: 0', {fontSize:'24px', fill:'#eeeeee'});
-        timeText.fixedToCamera = true;
-        fuelText = game.add.text(16, 80, 'Fuel: 0', {fontSize:'24px', fill:'#eeeeee'});
+        //timeText = game.add.text(16, 48, 'Time: 0', {fontSize:'24px', fill:'#eeeeee'});
+        //timeText.fixedToCamera = true;
+        fuelText = game.add.text(16, 48, 'Fuel: 0', {fontSize:'24px', fill:'#eeeeee'});
         fuelText.fixedToCamera = true;
-        altiText = game.add.text(150, 16, 'Altitude: 0', {fontSize:'24px', fill:'#eeeeee'});
-        altiText.fixedToCamera = true;
+        //altiText = game.add.text(150, 16, 'Altitude: 0', {fontSize:'24px', fill:'#eeeeee'});
+        //altiText.fixedToCamera = true;
         speedXText = game.add.text(player.x + 30, player.y - 30, 'SpeedX: 0', {fontSize:'12px', fill:'#eeeeee'});
         speedYText = game.add.text(player.x + 30, player.y - 15, 'SpeedY: 0', {fontSize:'12px', fill:'#eeeeee'});
 
@@ -105,9 +111,9 @@ var Game = {
         emitter.start(false, 200, 5, 0, false); 
 
         //init time
-        timer = game.time.create(false);
-        timer.loop(Phaser.Timer.SECOND, updateTime, this);
-        timer.start();
+        //timer = game.time.create(false);
+        //timer.loop(Phaser.Timer.SECOND, updateTime, this);
+        //timer.start();
 
 
     },
@@ -148,9 +154,9 @@ var Game = {
 
         //update text
         scoreText.text = 'Score: ' + score;
-        timeText.text = 'Time: ' + time;
+        //timeText.text = 'Time: ' + time;
         fuelText.text = 'Fuel: ' + player.fuel;
-        altiText.text = 'Altitude: ' + parseInt(900 - player.y);
+        //altiText.text = 'Altitude: ' + parseInt(900 - player.y);
         speedXText.reset(player.x + 30, player.y - 30);
         speedXText.text = 'SpeedX: ' + parseInt(player.body.velocity.x);
         speedYText.reset(player.x + 30, player.y - 15);
@@ -167,8 +173,12 @@ var Game = {
         game.camera.follow(player);
 
         //check gameover
-        if(player.fuel <= 0)
-            game.state.start('Over');
+        if(player.fuel <= 0){
+            if(player.lives > 0)
+                rebirth();
+            else
+                game.state.start('Over');
+        }
     }
 };
 
