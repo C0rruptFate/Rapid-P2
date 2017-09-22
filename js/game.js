@@ -28,11 +28,11 @@ var Game = {
     preload: function () {
 
         game.load.image('bg', 'images/Art/Environment/grey_background.png');
-        game.load.image('ground', 'images/Art/Environment/Sides.png');
+        game.load.image('ground', 'images/Art/Environment/ground.png');
         game.load.image('player', 'images/Art/Player/PLA_Default');  
         game.load.image('particle', 'images/particle.png');
 
-        game.load.physics('groundPolData', 'js/groundPolData.json');
+        game.load.physics('physicsData', 'js/physicsData.json');
 
     },
 
@@ -41,30 +41,37 @@ var Game = {
         game.world.setBounds(0, 0, 1600, 10240);
         //set sprites 
         bg = game.add.tileSprite(0, 0, 1600, 10240, 'bg');
-        ground = game.add.tileSprite(0, 0, 1600, 10240, 'ground');
-        //ground.anchor.setTo(0.5, 0);
-        player = game.add.sprite(800, 200, 'player');
+        ground = game.add.sprite(800, 5120, 'ground');
+        player = game.add.sprite(800, 800, 'player');
 
         //init physics
         game.physics.startSystem(Phaser.Physics.P2JS);
-        //game.physics.p2.setImpactEvents(true);
+        game.physics.p2.setImpactEvents(true);
+        game.physics.p2.defaultRestitution = 0.8;
+        // var playerColGroup = game.physics.p2.createCollisionGroup();
+        // var groundColGroup = game.physics.p2.createCollisionGroup();
+        // game.physics.p2.updateBoundsCollisionGroup();
 
-        game.physics.enable(player, Phaser.Physics.P2JS);
-        //game.physics.enable(ground, Phaser.Physics.P2JS);
-        //ground.body.clearShapes();
-        //ground.body.loadPolygon('groundPolData', 'ground');
-        //game.physics.enable(ground, Phaser.Physics.P2JS); 
-        player.body.gravity.y = 5;
-        // player.body.clearShapes();
-        // player.body.loadPolygon('physicsData', 'player');
-        // ground.body.clearShapes();
-        // ground.body.loadPolygon('physicsData', 'ground');
+        game.physics.p2.enable(player, true);
+        // player.body.kinematic = true;
+        // player.body.data.shapes[0] = false;
+        player.body.clearShapes();
+        player.body.setCircle(32);        
+        //player.body.setCollisionGroup(playerColGroup);        
+        player.body.collideWorldBounds = true;
 
-        //ground.body.immovable = true;
+        game.physics.p2.enable(ground, true);
+        // ground.body.kinematic = true;
+        ground.body.static = true;
+        ground.body.clearShapes();
+        ground.body.loadPolygon('physicsData', 'ground');        
+        // ground.body.setCollisionGroup(groundColGroup);
+
+        // player.body.collides(groundColGroup, colCallback, this);
+        // ground.body.collides(playerColGroup);        
 
         //init player
         player.anchor.setTo(0.5, 0.5); 
-        player.body.velocity.x = 10; 
         player.fuel = 1000;
         player.maxSpeed = 30;
         player.maxSpeedX = 30;
@@ -195,4 +202,8 @@ function updateTime() {
 
 function rebirth(){
 
+}
+
+function colCallback(){
+    console.log("collision");
 }
