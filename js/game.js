@@ -6,15 +6,6 @@ var ground;
 var emitter;
 var timer;
 
-//texts
-var scoreText;
-//var timeText;
-var fuelText;
-//var altiText;
-var speedXText;
-var speedYText;
-
-
 //game data
 var score = 0;
 var time = 0;
@@ -27,20 +18,18 @@ var R = 180/PI;
 var speed
 
 //arraies
-var coins;
-var chests;
-var largeChests;
+var items;
 
 var Game = {
 
     preload: function () {
 
-        game.load.image('bg', 'images/Art/Environment/grey_background.png');
-        game.load.image('ground', 'images/Art/Environment/ground.png');
+        game.load.image('bg', 'images/Art/Environment/map_whole_v1.png');
+        game.load.image('ground', 'images/Art/Environment/map_outline_v1.png');
         game.load.image('player', 'images/Art/Player/PLA_Default.png'); 
         game.load.image('player2', 'images/Art/Player/player.png') 
         game.load.image('particle', 'images/temp/particle.png');
-        game.load.image('coin', 'images/temp/coin.png');
+        game.load.image('item', 'images/temp/coin.png');
         game.load.image('chestS', 'images/temp/chestS.png');
         game.load.image('chestL', 'images/temp/chestL.png');
 
@@ -63,7 +52,7 @@ var Game = {
         game.physics.p2.defaultRestitution = 0.8;
         var playerColGroup = game.physics.p2.createCollisionGroup();
         var groundColGroup = game.physics.p2.createCollisionGroup();
-        var coinsColGroup = game.physics.p2.createCollisionGroup();
+        var itemsColGroup = game.physics.p2.createCollisionGroup();
         game.physics.p2.updateBoundsCollisionGroup();
 
         game.physics.p2.enable(player, true);
@@ -78,11 +67,11 @@ var Game = {
         // ground.body.kinematic = true;
         ground.body.static = true;
         ground.body.clearShapes();
-        ground.body.loadPolygon('physicsData', 'ground');        
+        ground.body.loadPolygon('physicsData', 'map_outline_v1');        
         ground.body.setCollisionGroup(groundColGroup);
 
         player.body.collides(groundColGroup, colCallback, this);
-        player.body.collides(coinsColGroup, coinsCallback, this);
+        player.body.collides(itemsColGroup, itemsCallback, this);
         ground.body.collides(playerColGroup);        
 
         //init player
@@ -112,17 +101,7 @@ var Game = {
             //console.log(player.engineLevel);
         }, this);
 
-        //init text
-        scoreText = game.add.text(16, 16, 'Score: 0', {fontSize:'24px', fill:'#eeeeee'});
-        scoreText.fixedToCamera = true;
-        //timeText = game.add.text(16, 48, 'Time: 0', {fontSize:'24px', fill:'#eeeeee'});
-        //timeText.fixedToCamera = true;
-        fuelText = game.add.text(16, 48, 'Fuel: 0', {fontSize:'24px', fill:'#eeeeee'});
-        fuelText.fixedToCamera = true;
-        //altiText = game.add.text(150, 16, 'Altitude: 0', {fontSize:'24px', fill:'#eeeeee'});
-        //altiText.fixedToCamera = true;
-        speedXText = game.add.text(player.x + 30, player.y - 30, 'Vx: 0', {fontSize:'14px', fill:'#eeeeee'});
-        speedYText = game.add.text(player.x + 30, player.y - 15, 'Vy: 0', {fontSize:'14px', fill:'#eeeeee'});
+        
 
         //init particle
         emitter = game.add.emitter(player.x, player.y, 100);
@@ -139,17 +118,21 @@ var Game = {
         //timer.start();
 
         //init arraies
-        coins = game.add.group();
+        items = game.add.group();
         for(var i = 0; i < 1; i++){
-            var coin = coins.create(800, 1000, 'coin');
-            game.physics.p2.enable(coin, true);
-            coin.body.clearShapes();
-            coin.body.setCircle(32);
-            //coin.body.data.shapes[0].sensor = true;
-            coin.body.setCollisionGroup(coinsColGroup);
-            coin.body.collides(playerColGroup);
+            
+            var item = items.create(800, 1000, 'item');
+            game.physics.p2.enable(item, true);
+            item.body.clearShapes();
+            item.body.setCircle(32);
+            //item.body.data.shapes[0].sensor = true;
+            item.body.setCollisionGroup(itemsColGroup);
+            item.body.collides(playerColGroup);
 
         }
+
+        //init texts
+        texts.create();
 
     },
 
@@ -189,14 +172,8 @@ var Game = {
         player.fuel -= 0.5 * player.engineLevel;
 
         //update text
-        scoreText.text = 'Score: ' + score;
-        //timeText.text = 'Time: ' + time;
-        fuelText.text = 'Fuel: ' + player.fuel;
-        //altiText.text = 'Altitude: ' + parseInt(900 - player.y);
-        speedXText.reset(player.x + 30, player.y - 30);
-        speedXText.text = 'Vx: ' + parseInt(player.body.velocity.x);
-        speedYText.reset(player.x + 30, player.y - 15);
-        speedYText.text = 'Vy: ' + parseInt(player.body.velocity.y);
+        
+        texts.update();
 
         //update particle
         emitter.x = player.x - Math.sin(player.body.rotation) * 24;
@@ -216,12 +193,7 @@ var Game = {
                 gameOver();
         }
 
-        //speed check
-        speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));
-        if(speed > 100){
-            speedXText.style.fill = "#dd0000";
-            speedYText.style.fill = "#dd0000";
-        }
+
 
     }
         
@@ -271,8 +243,8 @@ function colCallback(){
         crash();
 }
 
-function coinsCallback(body1, body2){
-    console.log("coin");
+function itemsCallback(body1, body2){
+    console.log("get item");
     body2.sprite.kill();
     score += 10;
 }
