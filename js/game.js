@@ -7,7 +7,7 @@ var emitter;
 var timer;
 
 //game data
-var score = 0;
+var goldNum = 0;
 var time = 0;
 
 //constants
@@ -24,8 +24,8 @@ var Game = {
 
     preload: function () {
 
-        game.load.image('bg', 'images/Art/Environment/map_whole_v1.png');
-        game.load.image('ground', 'images/Art/Environment/map_outline_v1.png');
+        game.load.image('bg', 'images/Art/Environment/Level_Design_Layout_v4.png');
+        game.load.image('ground', 'images/Art/Environment/Level_Design_Layout_v4_outline.png');
         game.load.image('player', 'images/Art/Player/PLA_Default.png'); 
         game.load.image('player2', 'images/Art/Player/player.png') 
         game.load.image('particle', 'images/temp/particle.png');
@@ -33,8 +33,12 @@ var Game = {
         game.load.image('chestS', 'images/temp/chestS.png');
         game.load.image('chestL', 'images/temp/chestL.png');
 
-
-        game.load.physics('physicsData', 'js/physicsData.json');
+        for(var i = 0; i < 7; i++)
+        {
+            game.load.physics('block' + i, 'js/block' + i + '.json');
+        }
+        //game.load.physics('block0', 'js/block0.json');
+        //game.load.physics('block1', 'js/block1.json');
 
     },
 
@@ -50,6 +54,7 @@ var Game = {
         game.physics.startSystem(Phaser.Physics.P2JS);
         game.physics.p2.setImpactEvents(true);
         game.physics.p2.defaultRestitution = 0.8;
+        game.physics.p2.gravity.y = 10;
         var playerColGroup = game.physics.p2.createCollisionGroup();
         var groundColGroup = game.physics.p2.createCollisionGroup();
         var itemsColGroup = game.physics.p2.createCollisionGroup();
@@ -67,7 +72,12 @@ var Game = {
         // ground.body.kinematic = true;
         ground.body.static = true;
         ground.body.clearShapes();
-        ground.body.loadPolygon('physicsData', 'map_outline_v1');        
+
+        for(var i = 0; i < 7; i++)
+        {
+            ground.body.loadPolygon('block' + i, 'block' + i);   
+        }
+             
         ground.body.setCollisionGroup(groundColGroup);
 
         player.body.collides(groundColGroup, colCallback, this);
@@ -179,8 +189,8 @@ var Game = {
         emitter.x = player.x - Math.sin(player.body.rotation) * 24;
         emitter.y = player.y + Math.cos(player.body.rotation) * 24;
         emitter.setRotation(0, 360);
-        emitter.setXSpeed(0, -player.body.velocity.x * 5);
-        emitter.setYSpeed(0, -player.body.velocity.y * 5);
+        emitter.setXSpeed(0, - Math.sin(player.body.rotation) * 100 * player.engineLevel);
+        emitter.setYSpeed(0, Math.cos(player.body.rotation) * 100 * player.engineLevel);
 
         //camera
         game.camera.follow(player);
@@ -246,5 +256,5 @@ function colCallback(){
 function itemsCallback(body1, body2){
     console.log("get item");
     body2.sprite.kill();
-    score += 10;
+    goldNum += 10;
 }
