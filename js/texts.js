@@ -52,7 +52,7 @@ var texts = {
         //speed check
         speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));
         speedText.text = parseInt(speed);
-        if(speed > 100){
+        if(speed > CRASH_SPEED){
             // speedXText.style.fill = "#ee0000";
             // speedYText.style.fill = "#ee0000";
             speedText.style.fill = "#ee0000";

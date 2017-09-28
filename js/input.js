@@ -22,8 +22,8 @@ var inputManager = {
             player.body.angularVelocity -= 0.1;
         }
 
-        game.input.keyboard.addKey(Phaser.Keyboard.Right).onHoldCallback = function(){
-            player.body.angularVelocity -= 0.1;
+        game.input.keyboard.addKey(Phaser.Keyboard.RIGHT).onHoldCallback = function(){
+            player.body.angularVelocity += 0.1;
         }
 	},
 

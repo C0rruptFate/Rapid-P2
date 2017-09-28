@@ -4,11 +4,11 @@ var player;
 var bg;
 var ground;
 var emitter;
-var timer;
+var rCDTimer;
 
 //game data
 var goldNum = 0;
-var time = 0;
+//var time = 0;
 
 //temp var
 var speed
@@ -20,8 +20,8 @@ var Game = {
 
     preload: function () {
 
-        game.load.image('bg', 'images/Art/Environment/Level_Design_Layout_v4.png');
-        game.load.image('ground', 'images/Art/Environment/Level_Design_Layout_v4_outline.png');
+        game.load.image('bg', 'images/Art/Environment/Maps/Level_Design_Layout_full_v2.png');
+        game.load.image('ground', 'images/Art/Environment/Maps/Level_Design_Layout_outline_v2_2.png');
         game.load.image('player', 'images/Art/Player/PLA_Default.png'); 
         game.load.image('player2', 'images/Art/Player/player.png') 
         game.load.image('particle', 'images/temp/particle.png');
@@ -55,7 +55,7 @@ var Game = {
         var itemsColGroup = game.physics.p2.createCollisionGroup();
         game.physics.p2.updateBoundsCollisionGroup();
 
-        game.physics.p2.enable(player, true);
+        game.physics.p2.enable(player, false);
         // player.body.kinematic = true;
         // player.body.data.shapes[0] = false;
         player.body.clearShapes();
@@ -63,7 +63,7 @@ var Game = {
         player.body.setCollisionGroup(playerColGroup);        
         player.body.collideWorldBounds = true;
 
-        game.physics.p2.enable(ground, true);
+        game.physics.p2.enable(ground, false);
         // ground.body.kinematic = true;
         ground.body.static = true;
         ground.body.clearShapes();
@@ -96,7 +96,7 @@ var Game = {
         inputManager.create();    
 
         //init particle
-        emitter = game.add.emitter(player.x, player.y, 100);
+        emitter = game.add.emitter(player.x - Math.sin(player.body.rotation) * 24, player.y + Math.cos(player.body.rotation) * 24, 100);
         emitter.makeParticles('particle');
         emitter.minParticleScale = 0.5;
         emitter.maxParticleScale = 1.5;
@@ -105,16 +105,16 @@ var Game = {
         emitter.start(false, 200, 5, 0, false); 
 
         //init time
-        timer = game.time.create(false);
-        timer.loop(Phaser.Timer.SECOND, updateTime, this);
-        timer.start();
+        // timer = game.time.create(false);
+        // timer.loop(Phaser.Timer.SECOND * 3, updateTime, this);
+
 
         //init arraies
         items = game.add.group();
         for(var i = 0; i < 1; i++){
             
             var item = items.create(800, 1000, 'item');
-            game.physics.p2.enable(item, true);
+            game.physics.p2.enable(item, false);
             item.body.clearShapes();
             item.body.setCircle(32);
             //item.body.data.shapes[0].sensor = true;
@@ -127,7 +127,7 @@ var Game = {
         texts.create();
 
         //set camera
-        game.camera.follow(player);
+        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
     },
 
@@ -160,9 +160,15 @@ var Game = {
         texts.update();
 
         //update particle
+        if(player.engineLevel == 0)
+            emitter.on = false;
+        else
+            emitter.on = true;
+
         emitter.x = player.x - Math.sin(player.body.rotation) * 24;
         emitter.y = player.y + Math.cos(player.body.rotation) * 24;
         emitter.setRotation(0, 360);
+
         emitter.setXSpeed(0, - Math.sin(player.body.rotation) * 100 * player.engineLevel);
         emitter.setYSpeed(0, Math.cos(player.body.rotation) * 100 * player.engineLevel);
 
@@ -185,31 +191,12 @@ function gameOver(){
     game.state.start('Over');
 }
 
-function updateTime() {
+function rebirthCallback() {
 
-    time += 1;
+    rCDTimer.stop();
 
-}
-
-function rebirth(){
-
-    console.log("rebirth");
-    //game.state.start('Game');
-    //player = game.add.sprite(800, 800, 'player');
-    player.reset(800, 800);
-    player.fuel = 3000;
-    player.engineLevel = 0;
-    //player.revive();
-
-}
-
-function crash(){
-
-    var startTime = time;
-    player.lives -= 1;
     if(player.lives > 0)
     {
-        var startTime = time;
         rebirth();
     }
     else
@@ -217,15 +204,40 @@ function crash(){
 
 }
 
+function rebirth(){
+
+    console.log("rebirth");
+
+    player.reset(800, 800);
+    player.fuel = 3000;
+    player.engineLevel = 0;
+
+    speedText.alpha = 100;
+
+}
+
+function crash(){
+
+    game.camera.shake(0.1, 100);
+    player.lives -= 1;
+    player.kill();
+    speedText.alpha = 0;
+
+    rCDTimer = game.time.create(false);
+    rCDTimer.loop(Phaser.Timer.SECOND * 3, rebirthCallback, this);
+    rCDTimer.start();
+
+}
+
 function colCallback(){
 
-    console.log("collision");
     speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));
-    console.log(speed);
+
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
     player.engineLevel = 0;
-    if(speed > 100)
+
+    if(speed > CRASH_SPEED)
         crash();
 
 }
