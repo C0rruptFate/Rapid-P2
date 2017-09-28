@@ -17,10 +17,14 @@ var prevSpeed = 0;
 //arraies
 var items;
 
+//animations
+//var crashAnime;
+
 var Game = {
 
     preload: function () {
 
+        //load images    
         game.load.image('bg', 'images/Art/Environment/Maps/Level_Design_Layout_full_v2.png');
         game.load.image('ground', 'images/Art/Environment/Maps/Level_Design_Layout_outline_v2_2.png');
         game.load.image('player', 'images/Art/Player/PLA_Default.png'); 
@@ -30,10 +34,14 @@ var Game = {
         game.load.image('chestS', 'images/temp/chestS.png');
         game.load.image('chestL', 'images/temp/chestL.png');
 
+        //load physics
         for(var i = 0; i < 7; i++)
         {
             game.load.physics('block' + i, 'js/block' + i + '.json');
         }
+
+        //load animation
+        game.load.spritesheet('crash', 'images/Art/VFX/Explosion2.0/VFX_ExplosionSpriteSheet 85x200 - 72', 85, 200, 72);
 
     },
 
@@ -130,6 +138,10 @@ var Game = {
         //set camera
         game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
+        //init animation
+    
+
+
     },
 
     update: function () {
@@ -186,6 +198,9 @@ var Game = {
         
         }
 
+        //Animation
+        
+
     }
         
 };
@@ -230,6 +245,11 @@ function crash(){
     rCDTimer = game.time.create(false);
     rCDTimer.loop(Phaser.Timer.SECOND * 3, rebirthCallback, this);
     rCDTimer.start();
+
+    var crashAnime = game.add.sprite(player.x, player.y, 'crash');
+    crashAnime.anchor.set(0.5, 0.5);
+    var explosion = crashAnime.animations.add('explode');
+    crashAnime.animations.play('explode', 60, false);
 
 }
 
