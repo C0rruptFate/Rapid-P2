@@ -41,7 +41,7 @@ var texts = {
 	update: function(){
 		
 		goldText.text = '$' + goldNum + 'M';
-        fuelText.text = player.fuel;
+        fuelText.text = parseInt(player.fuel);
         speedText.reset(player.x + 35, player.y - 35);
         // speedXText.reset(player.x + 30, player.y - 30);
         // speedXText.text = 'Vx: ' + parseInt(player.body.velocity.x);
