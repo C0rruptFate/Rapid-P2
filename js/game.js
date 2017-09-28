@@ -6,17 +6,8 @@ var ground;
 var emitter;
 var timer;
 
-//texts
-var scoreText;
-//var timeText;
-var fuelText;
-//var altiText;
-var speedXText;
-var speedYText;
-
-
 //game data
-var score = 0;
+var goldNum = 0;
 var time = 0;
 
 //constants
@@ -27,25 +18,27 @@ var R = 180/PI;
 var speed
 
 //arraies
-var coins;
-var chests;
-var largeChests;
+var items;
 
 var Game = {
 
     preload: function () {
 
-        game.load.image('bg', 'images/Art/Environment/grey_background.png');
-        game.load.image('ground', 'images/Art/Environment/ground.png');
+        game.load.image('bg', 'images/Art/Environment/Level_Design_Layout_v4.png');
+        game.load.image('ground', 'images/Art/Environment/Level_Design_Layout_v4_outline.png');
         game.load.image('player', 'images/Art/Player/PLA_Default.png'); 
         game.load.image('player2', 'images/Art/Player/player.png') 
         game.load.image('particle', 'images/temp/particle.png');
-        game.load.image('coin', 'images/temp/coin.png');
+        game.load.image('item', 'images/temp/coin.png');
         game.load.image('chestS', 'images/temp/chestS.png');
         game.load.image('chestL', 'images/temp/chestL.png');
 
-
-        game.load.physics('physicsData', 'js/physicsData.json');
+        for(var i = 0; i < 7; i++)
+        {
+            game.load.physics('block' + i, 'js/block' + i + '.json');
+        }
+        //game.load.physics('block0', 'js/block0.json');
+        //game.load.physics('block1', 'js/block1.json');
 
     },
 
@@ -61,9 +54,10 @@ var Game = {
         game.physics.startSystem(Phaser.Physics.P2JS);
         game.physics.p2.setImpactEvents(true);
         game.physics.p2.defaultRestitution = 0.8;
+        game.physics.p2.gravity.y = 10;
         var playerColGroup = game.physics.p2.createCollisionGroup();
         var groundColGroup = game.physics.p2.createCollisionGroup();
-        var coinsColGroup = game.physics.p2.createCollisionGroup();
+        var itemsColGroup = game.physics.p2.createCollisionGroup();
         game.physics.p2.updateBoundsCollisionGroup();
 
         game.physics.p2.enable(player, true);
@@ -78,11 +72,16 @@ var Game = {
         // ground.body.kinematic = true;
         ground.body.static = true;
         ground.body.clearShapes();
-        ground.body.loadPolygon('physicsData', 'ground');        
+
+        for(var i = 0; i < 7; i++)
+        {
+            ground.body.loadPolygon('block' + i, 'block' + i);   
+        }
+             
         ground.body.setCollisionGroup(groundColGroup);
 
         player.body.collides(groundColGroup, colCallback, this);
-        player.body.collides(coinsColGroup, coinsCallback, this);
+        player.body.collides(itemsColGroup, itemsCallback, this);
         ground.body.collides(playerColGroup);        
 
         //init player
@@ -112,17 +111,7 @@ var Game = {
             //console.log(player.engineLevel);
         }, this);
 
-        //init text
-        scoreText = game.add.text(16, 16, 'Score: 0', {fontSize:'24px', fill:'#eeeeee'});
-        scoreText.fixedToCamera = true;
-        //timeText = game.add.text(16, 48, 'Time: 0', {fontSize:'24px', fill:'#eeeeee'});
-        //timeText.fixedToCamera = true;
-        fuelText = game.add.text(16, 48, 'Fuel: 0', {fontSize:'24px', fill:'#eeeeee'});
-        fuelText.fixedToCamera = true;
-        //altiText = game.add.text(150, 16, 'Altitude: 0', {fontSize:'24px', fill:'#eeeeee'});
-        //altiText.fixedToCamera = true;
-        speedXText = game.add.text(player.x + 30, player.y - 30, 'Vx: 0', {fontSize:'14px', fill:'#eeeeee'});
-        speedYText = game.add.text(player.x + 30, player.y - 15, 'Vy: 0', {fontSize:'14px', fill:'#eeeeee'});
+        
 
         //init particle
         emitter = game.add.emitter(player.x, player.y, 100);
@@ -139,17 +128,21 @@ var Game = {
         //timer.start();
 
         //init arraies
-        coins = game.add.group();
+        items = game.add.group();
         for(var i = 0; i < 1; i++){
-            var coin = coins.create(800, 1000, 'coin');
-            game.physics.p2.enable(coin, true);
-            coin.body.clearShapes();
-            coin.body.setCircle(32);
-            //coin.body.data.shapes[0].sensor = true;
-            coin.body.setCollisionGroup(coinsColGroup);
-            coin.body.collides(playerColGroup);
+            
+            var item = items.create(800, 1000, 'item');
+            game.physics.p2.enable(item, true);
+            item.body.clearShapes();
+            item.body.setCircle(32);
+            //item.body.data.shapes[0].sensor = true;
+            item.body.setCollisionGroup(itemsColGroup);
+            item.body.collides(playerColGroup);
 
         }
+
+        //init texts
+        texts.create();
 
     },
 
@@ -189,21 +182,15 @@ var Game = {
         player.fuel -= 0.5 * player.engineLevel;
 
         //update text
-        scoreText.text = 'Score: ' + score;
-        //timeText.text = 'Time: ' + time;
-        fuelText.text = 'Fuel: ' + player.fuel;
-        //altiText.text = 'Altitude: ' + parseInt(900 - player.y);
-        speedXText.reset(player.x + 30, player.y - 30);
-        speedXText.text = 'Vx: ' + parseInt(player.body.velocity.x);
-        speedYText.reset(player.x + 30, player.y - 15);
-        speedYText.text = 'Vy: ' + parseInt(player.body.velocity.y);
+        
+        texts.update();
 
         //update particle
         emitter.x = player.x - Math.sin(player.body.rotation) * 24;
         emitter.y = player.y + Math.cos(player.body.rotation) * 24;
         emitter.setRotation(0, 360);
-        emitter.setXSpeed(0, -player.body.velocity.x * 5);
-        emitter.setYSpeed(0, -player.body.velocity.y * 5);
+        emitter.setXSpeed(0, - Math.sin(player.body.rotation) * 100 * player.engineLevel);
+        emitter.setYSpeed(0, Math.cos(player.body.rotation) * 100 * player.engineLevel);
 
         //camera
         game.camera.follow(player);
@@ -216,12 +203,7 @@ var Game = {
                 gameOver();
         }
 
-        //speed check
-        speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));
-        if(speed > 100){
-            speedXText.style.fill = "#dd0000";
-            speedYText.style.fill = "#dd0000";
-        }
+
 
     }
         
@@ -271,8 +253,8 @@ function colCallback(){
         crash();
 }
 
-function coinsCallback(body1, body2){
-    console.log("coin");
+function itemsCallback(body1, body2){
+    console.log("get item");
     body2.sprite.kill();
-    score += 10;
+    goldNum += 10;
 }
