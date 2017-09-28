@@ -11,7 +11,8 @@ var goldNum = 0;
 //var time = 0;
 
 //temp var
-var speed
+var speed = 0
+var prevSpeed = 0;
 
 //arraies
 var items;
@@ -63,7 +64,7 @@ var Game = {
         player.body.setCollisionGroup(playerColGroup);        
         player.body.collideWorldBounds = true;
 
-        game.physics.p2.enable(ground, false);
+        game.physics.p2.enable(ground, true);
         // ground.body.kinematic = true;
         ground.body.static = true;
         ground.body.clearShapes();
@@ -156,6 +157,9 @@ var Game = {
         player.body.velocity.x += Math.sin(player.body.rotation) * (0.2) * player.engineLevel;
         player.fuel -= 0.5 * player.engineLevel;
 
+        prevSpeed = speed;
+        speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));        
+
         //update text        
         texts.update();
 
@@ -231,13 +235,11 @@ function crash(){
 
 function colCallback(){
 
-    speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));
-
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
     player.engineLevel = 0;
 
-    if(speed > CRASH_SPEED)
+    if(prevSpeed > CRASH_SPEED)
         crash();
 
 }
