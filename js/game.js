@@ -1,5 +1,5 @@
 //game components
-var input;
+
 var player;
 var bg;
 var ground;
@@ -9,10 +9,6 @@ var timer;
 //game data
 var goldNum = 0;
 var time = 0;
-
-//constants
-var PI = 3.1416;
-var R = 180/PI;
 
 //temp var
 var speed
@@ -37,17 +33,16 @@ var Game = {
         {
             game.load.physics('block' + i, 'js/block' + i + '.json');
         }
-        //game.load.physics('block0', 'js/block0.json');
-        //game.load.physics('block1', 'js/block1.json');
 
     },
 
     create: function () {
 
-        game.world.setBounds(0, 0, 1600, 10240);
+        game.world.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
         //set sprites 
-        bg = game.add.tileSprite(0, 0, 1600, 10240, 'bg');
-        ground = game.add.sprite(800, 5120, 'ground');
+        bg = game.add.tileSprite(0, 0, MAP_WIDTH, MAP_HEIGHT, 'bg');
+        ground = game.add.sprite(MAP_WIDTH / 2, MAP_HEIGHT / 2, 'ground');
         player = game.add.sprite(800, 800, 'player');
 
         //init physics
@@ -98,20 +93,7 @@ var Game = {
         player.isMoving = false;
 
         //init input
-        input = game.input.keyboard.createCursorKeys();
-        game.input.keyboard.addKey(Phaser.Keyboard.UP).onDown.add(function(){
-            if(player.engineLevel < 3)
-                player.engineLevel++;
-            //console.log(player.engineLevel);
-        }, this);
-
-        game.input.keyboard.addKey(Phaser.Keyboard.DOWN).onDown.add(function(){
-            if(player.engineLevel > 0)
-                player.engineLevel--;
-            //console.log(player.engineLevel);
-        }, this);
-
-        
+        inputManager.create();    
 
         //init particle
         emitter = game.add.emitter(player.x, player.y, 100);
@@ -123,9 +105,9 @@ var Game = {
         emitter.start(false, 200, 5, 0, false); 
 
         //init time
-        //timer = game.time.create(false);
-        //timer.loop(Phaser.Timer.SECOND, updateTime, this);
-        //timer.start();
+        timer = game.time.create(false);
+        timer.loop(Phaser.Timer.SECOND, updateTime, this);
+        timer.start();
 
         //init arraies
         items = game.add.group();
@@ -144,33 +126,27 @@ var Game = {
         //init texts
         texts.create();
 
+        //set camera
+        game.camera.follow(player);
+
     },
 
     update: function () {
+    
 
-        // //set collision
-        // if(game.physics.arcade.collide(player, ground)){
-        //     //console.log("collision");
-        //     //gameOver();
-        // }        
-
-        //input
-        if(input.left.isDown){
-            player.body.angularVelocity -= 0.1;
-
-        }
-        else if(input.right.isDown){
-            player.body.angularVelocity += 0.1;            
-        }
-        else{            
+        //update velocity
+        if(!input.left.isDown && !input.right.isDown)
+        {            
+            
             if(player.body.angularVelocity < -5)
                 player.body.angularVelocity += 0.1;
             else if(player.body.angularVelocity > 5)
                 player.body.angularVelocity -= 0.1;
-            else{
+            else
                 player.body.angularVelocity = 0;
-                }
+                
         }
+
         if(player.body.angularVelocity < player.minAngVelo)
             player.body.angularVelocity = player.minAngVelo;
         if(player.body.angularVelocity > player.maxAngVelo)
@@ -178,11 +154,9 @@ var Game = {
 
         player.body.velocity.y += Math.cos(player.body.rotation) * (-0.2) * player.engineLevel;
         player.body.velocity.x += Math.sin(player.body.rotation) * (0.2) * player.engineLevel;
-        //player.body.speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));
         player.fuel -= 0.5 * player.engineLevel;
 
-        //update text
-        
+        //update text        
         texts.update();
 
         //update particle
@@ -192,18 +166,15 @@ var Game = {
         emitter.setXSpeed(0, - Math.sin(player.body.rotation) * 100 * player.engineLevel);
         emitter.setYSpeed(0, Math.cos(player.body.rotation) * 100 * player.engineLevel);
 
-        //camera
-        game.camera.follow(player);
-
         //check gameover
         if(player.fuel <= 0){
+
             if(player.lives > 0)
                 rebirth();
             else
                 gameOver();
+        
         }
-
-
 
     }
         
@@ -217,7 +188,6 @@ function gameOver(){
 function updateTime() {
 
     time += 1;
-    timeText.text = 'Time: ' + time;
 
 }
 
@@ -234,15 +204,21 @@ function rebirth(){
 }
 
 function crash(){
-    console.log("crash");
+
+    var startTime = time;
     player.lives -= 1;
     if(player.lives > 0)
+    {
+        var startTime = time;
         rebirth();
+    }
     else
         gameOver();
+
 }
 
 function colCallback(){
+
     console.log("collision");
     speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));
     console.log(speed);
@@ -251,10 +227,13 @@ function colCallback(){
     player.engineLevel = 0;
     if(speed > 100)
         crash();
+
 }
 
 function itemsCallback(body1, body2){
+
     console.log("get item");
     body2.sprite.kill();
     goldNum += 10;
+
 }

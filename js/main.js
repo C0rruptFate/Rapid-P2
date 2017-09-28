@@ -1,5 +1,3 @@
-    var WINDOW_WIDTH = 1600;
-    var WINDOW_HEIGHT = 900
 
     var game
     
