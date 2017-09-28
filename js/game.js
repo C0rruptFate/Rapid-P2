@@ -20,6 +20,11 @@ var items;
 //animations
 //var crashAnime;
 
+//music 
+var bgm;
+var bubblesMusic;
+var oceanBaseMusic;
+
 var Game = {
 
     preload: function () {
@@ -42,6 +47,13 @@ var Game = {
 
         //load animation
         game.load.spritesheet('crash', 'images/Art/VFX/Explosion2.0/VFX_ExplosionSpriteSheet 85x200 - 72', 85, 200, 72);
+
+        //load music
+        game.load.audio('bgm', 'audio/background/bg_music.wav');
+        game.load.audio('bubblesMusic', 'audio/background/bg_bubbles.wav');
+        game.load.audio('oceanBaseMusic', 'audio/background/bg_ocean_base.wav');
+
+
 
     },
 
@@ -140,7 +152,18 @@ var Game = {
 
         //init animation
     
+        //init music
+        bgm = game.add.audio('bgm');
+        bgm.allowMultiple = true;
+        bgm.play();
 
+        bubblesMusic = game.add.audio('bubblesMusic');
+        bubblesMusic.allowMultiple = true;
+        bubblesMusic.play();
+
+        oceanBaseMusic = game.add.audio('oceanBaseMusic');
+        oceanBaseMusic.allowMultiple = true;
+        oceanBaseMusic.play();
 
     },
 
