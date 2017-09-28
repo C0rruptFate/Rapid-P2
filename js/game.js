@@ -1,18 +1,14 @@
 //game components
-var input;
+
 var player;
 var bg;
 var ground;
 var emitter;
-var timer;
+var rCDTimer;
 
 //game data
 var goldNum = 0;
-var time = 0;
-
-//constants
-var PI = 3.1416;
-var R = 180/PI;
+//var time = 0;
 
 //temp var
 var speed
@@ -24,8 +20,8 @@ var Game = {
 
     preload: function () {
 
-        game.load.image('bg', 'images/Art/Environment/Level_Design_Layout_v4.png');
-        game.load.image('ground', 'images/Art/Environment/Level_Design_Layout_v4_outline.png');
+        game.load.image('bg', 'images/Art/Environment/Maps/Level_Design_Layout_full_v2.png');
+        game.load.image('ground', 'images/Art/Environment/Maps/Level_Design_Layout_outline_v2_2.png');
         game.load.image('player', 'images/Art/Player/PLA_Default.png'); 
         game.load.image('player2', 'images/Art/Player/player.png') 
         game.load.image('particle', 'images/temp/particle.png');
@@ -37,17 +33,16 @@ var Game = {
         {
             game.load.physics('block' + i, 'js/block' + i + '.json');
         }
-        //game.load.physics('block0', 'js/block0.json');
-        //game.load.physics('block1', 'js/block1.json');
 
     },
 
     create: function () {
 
-        game.world.setBounds(0, 0, 1600, 10240);
+        game.world.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
         //set sprites 
-        bg = game.add.tileSprite(0, 0, 1600, 10240, 'bg');
-        ground = game.add.sprite(800, 5120, 'ground');
+        bg = game.add.tileSprite(0, 0, MAP_WIDTH, MAP_HEIGHT, 'bg');
+        ground = game.add.sprite(MAP_WIDTH / 2, MAP_HEIGHT / 2, 'ground');
         player = game.add.sprite(800, 800, 'player');
 
         //init physics
@@ -60,7 +55,7 @@ var Game = {
         var itemsColGroup = game.physics.p2.createCollisionGroup();
         game.physics.p2.updateBoundsCollisionGroup();
 
-        game.physics.p2.enable(player, true);
+        game.physics.p2.enable(player, false);
         // player.body.kinematic = true;
         // player.body.data.shapes[0] = false;
         player.body.clearShapes();
@@ -68,7 +63,7 @@ var Game = {
         player.body.setCollisionGroup(playerColGroup);        
         player.body.collideWorldBounds = true;
 
-        game.physics.p2.enable(ground, true);
+        game.physics.p2.enable(ground, false);
         // ground.body.kinematic = true;
         ground.body.static = true;
         ground.body.clearShapes();
@@ -98,23 +93,10 @@ var Game = {
         player.isMoving = false;
 
         //init input
-        input = game.input.keyboard.createCursorKeys();
-        game.input.keyboard.addKey(Phaser.Keyboard.UP).onDown.add(function(){
-            if(player.engineLevel < 3)
-                player.engineLevel++;
-            //console.log(player.engineLevel);
-        }, this);
-
-        game.input.keyboard.addKey(Phaser.Keyboard.DOWN).onDown.add(function(){
-            if(player.engineLevel > 0)
-                player.engineLevel--;
-            //console.log(player.engineLevel);
-        }, this);
-
-        
+        inputManager.create();    
 
         //init particle
-        emitter = game.add.emitter(player.x, player.y, 100);
+        emitter = game.add.emitter(player.x - Math.sin(player.body.rotation) * 24, player.y + Math.cos(player.body.rotation) * 24, 100);
         emitter.makeParticles('particle');
         emitter.minParticleScale = 0.5;
         emitter.maxParticleScale = 1.5;
@@ -123,16 +105,16 @@ var Game = {
         emitter.start(false, 200, 5, 0, false); 
 
         //init time
-        //timer = game.time.create(false);
-        //timer.loop(Phaser.Timer.SECOND, updateTime, this);
-        //timer.start();
+        // timer = game.time.create(false);
+        // timer.loop(Phaser.Timer.SECOND * 3, updateTime, this);
+
 
         //init arraies
         items = game.add.group();
         for(var i = 0; i < 1; i++){
             
             var item = items.create(800, 1000, 'item');
-            game.physics.p2.enable(item, true);
+            game.physics.p2.enable(item, false);
             item.body.clearShapes();
             item.body.setCircle(32);
             //item.body.data.shapes[0].sensor = true;
@@ -144,33 +126,27 @@ var Game = {
         //init texts
         texts.create();
 
+        //set camera
+        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
     },
 
     update: function () {
+    
 
-        // //set collision
-        // if(game.physics.arcade.collide(player, ground)){
-        //     //console.log("collision");
-        //     //gameOver();
-        // }        
-
-        //input
-        if(input.left.isDown){
-            player.body.angularVelocity -= 0.1;
-
-        }
-        else if(input.right.isDown){
-            player.body.angularVelocity += 0.1;            
-        }
-        else{            
+        //update velocity
+        if(!input.left.isDown && !input.right.isDown)
+        {            
+            
             if(player.body.angularVelocity < -5)
                 player.body.angularVelocity += 0.1;
             else if(player.body.angularVelocity > 5)
                 player.body.angularVelocity -= 0.1;
-            else{
+            else
                 player.body.angularVelocity = 0;
-                }
+                
         }
+
         if(player.body.angularVelocity < player.minAngVelo)
             player.body.angularVelocity = player.minAngVelo;
         if(player.body.angularVelocity > player.maxAngVelo)
@@ -178,32 +154,33 @@ var Game = {
 
         player.body.velocity.y += Math.cos(player.body.rotation) * (-0.2) * player.engineLevel;
         player.body.velocity.x += Math.sin(player.body.rotation) * (0.2) * player.engineLevel;
-        //player.body.speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));
         player.fuel -= 0.5 * player.engineLevel;
 
-        //update text
-        
+        //update text        
         texts.update();
 
         //update particle
+        if(player.engineLevel == 0)
+            emitter.on = false;
+        else
+            emitter.on = true;
+
         emitter.x = player.x - Math.sin(player.body.rotation) * 24;
         emitter.y = player.y + Math.cos(player.body.rotation) * 24;
         emitter.setRotation(0, 360);
+
         emitter.setXSpeed(0, - Math.sin(player.body.rotation) * 100 * player.engineLevel);
         emitter.setYSpeed(0, Math.cos(player.body.rotation) * 100 * player.engineLevel);
 
-        //camera
-        game.camera.follow(player);
-
         //check gameover
         if(player.fuel <= 0){
+
             if(player.lives > 0)
                 rebirth();
             else
                 gameOver();
+        
         }
-
-
 
     }
         
@@ -214,47 +191,61 @@ function gameOver(){
     game.state.start('Over');
 }
 
-function updateTime() {
+function rebirthCallback() {
 
-    time += 1;
-    timeText.text = 'Time: ' + time;
+    rCDTimer.stop();
+
+    if(player.lives > 0)
+    {
+        rebirth();
+    }
+    else
+        gameOver();
 
 }
 
 function rebirth(){
 
     console.log("rebirth");
-    //game.state.start('Game');
-    //player = game.add.sprite(800, 800, 'player');
+
     player.reset(800, 800);
     player.fuel = 3000;
     player.engineLevel = 0;
-    //player.revive();
+
+    speedText.alpha = 100;
 
 }
 
 function crash(){
-    console.log("crash");
+
+    game.camera.shake(0.1, 100);
     player.lives -= 1;
-    if(player.lives > 0)
-        rebirth();
-    else
-        gameOver();
+    player.kill();
+    speedText.alpha = 0;
+
+    rCDTimer = game.time.create(false);
+    rCDTimer.loop(Phaser.Timer.SECOND * 3, rebirthCallback, this);
+    rCDTimer.start();
+
 }
 
 function colCallback(){
-    console.log("collision");
+
     speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));
-    console.log(speed);
+
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
     player.engineLevel = 0;
-    if(speed > 100)
+
+    if(speed > CRASH_SPEED)
         crash();
+
 }
 
 function itemsCallback(body1, body2){
+
     console.log("get item");
     body2.sprite.kill();
     goldNum += 10;
+
 }
