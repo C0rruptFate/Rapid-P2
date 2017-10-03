@@ -5,9 +5,10 @@ var bg;
 var ground;
 var emitter;
 var rCDTimer;
+var gZeroTimer;
 
 //game data
-var goldNum = 0;
+var goldNum = 300;
 //var time = 0;
 
 //temp var
@@ -16,6 +17,7 @@ var prevSpeed = 0;
 
 //arraies
 var items;
+var itemData;
 
 //animations
 //var crashAnime;
@@ -35,7 +37,8 @@ var Game = {
         game.load.image('player', 'images/Art/Player/PLA_Default.png'); 
         game.load.image('player2', 'images/Art/Player/player.png') 
         game.load.image('particle', 'images/temp/particle.png');
-        game.load.image('item', 'images/temp/coin.png');
+        game.load.image('item', 'images/Art/Environment/Assets/ENV_GoldCoin.png');
+        game.load.image('chest', 'images/Art/Environment/Assets/ENV_GoldChest.png');
         game.load.image('chestS', 'images/temp/chestS.png');
         game.load.image('chestL', 'images/temp/chestL.png');
 
@@ -49,9 +52,12 @@ var Game = {
         game.load.spritesheet('crash', 'images/Art/VFX/Explosion2.0/VFX_ExplosionSpriteSheet 85x200 - 72', 85, 200, 72);
 
         //load music
-        game.load.audio('bgm', 'audio/background/bg_music.wav');
+        game.load.audio('bgm', 'audio/background/bg_music.mp3');
         game.load.audio('bubblesMusic', 'audio/background/bg_bubbles.wav');
         game.load.audio('oceanBaseMusic', 'audio/background/bg_ocean_base.wav');
+
+        //load json
+        game.load.json('itemData', 'js/Treasure_coord_gold.json');
 
 
 
@@ -83,8 +89,9 @@ var Game = {
         player.body.setCircle(32);        
         player.body.setCollisionGroup(playerColGroup);        
         player.body.collideWorldBounds = true;
+        //player.body.gravity.y = 10;
 
-        game.physics.p2.enable(ground, true);
+        game.physics.p2.enable(ground, false);
         // ground.body.kinematic = true;
         ground.body.static = true;
         ground.body.clearShapes();
@@ -131,16 +138,22 @@ var Game = {
 
 
         //init arraies
+        itemData = game.cache.getJSON('itemData');
+
         items = game.add.group();
-        for(var i = 0; i < 1; i++){
-            
-            var item = items.create(800, 1000, 'item');
-            game.physics.p2.enable(item, false);
+        for(var i = 0; i < itemData.length; i++){
+
+            var item = items.create(parseInt(itemData[i].x), parseInt(itemData[i].y) - 20, 'item');
+            game.physics.p2.enable(item, true);
             item.body.clearShapes();
             item.body.setCircle(32);
+            item.body.data.gravityScale = 0;
             //item.body.data.shapes[0].sensor = true;
             item.body.setCollisionGroup(itemsColGroup);
             item.body.collides(playerColGroup);
+            item.amount = itemData[i].amount1;
+
+            item.text = game.add.text(item.x + 25, item.y - 25, item.amount + 'M', { font:'Aquatico-Regular', fontSize:'20px', fill:'#6d5701'});
 
         }
 
@@ -236,6 +249,7 @@ function gameOver(){
 function rebirthCallback() {
 
     rCDTimer.stop();
+    goldNum = 0;
 
     if(player.lives > 0)
     {
@@ -269,6 +283,19 @@ function crash(){
     rCDTimer.loop(Phaser.Timer.SECOND * 3, rebirthCallback, this);
     rCDTimer.start();
 
+    gZeroTimer = game.time.create(false);
+    gZeroTimer.loop(1, function goldToZero()
+        {
+            if(goldNum >= 11)
+                goldNum -= 11;
+            else{
+                goldNum = 0;
+                gZeroTimer.stop();
+            }          
+
+        }, this);
+    gZeroTimer.start();
+
     var crashAnime = game.add.sprite(player.x, player.y, 'crash');
     crashAnime.anchor.set(0.5, 0.5);
     var explosion = crashAnime.animations.add('explode');
@@ -290,7 +317,9 @@ function colCallback(){
 function itemsCallback(body1, body2){
 
     console.log("get item");
+    goldNum += body2.sprite.amount;
+    body2.sprite.text.kill();
     body2.sprite.kill();
-    goldNum += 10;
+    
 
 }
