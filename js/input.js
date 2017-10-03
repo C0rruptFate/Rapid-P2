@@ -25,11 +25,36 @@ var inputManager = {
         game.input.keyboard.addKey(Phaser.Keyboard.RIGHT).onHoldCallback = function(){
             player.body.angularVelocity += 0.1;
         }
+
+        game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR).onDown.add(function(){
+
+            //change ship
+            if(player.lives > 1){
+            	player.lives -= 1;
+            	rebirth();
+            }
+            else{
+            	if(goldNum >= 500){
+            		victory();
+            	}
+            	else
+            		gameOver();
+            }
+
+        }, this);
+
 	},
 
 	update: function()
 	{
 
 	}
+
+}
+
+function victory(){
+
+	console.log("victory");
+	victorySFX.play();
 
 }

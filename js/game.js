@@ -6,6 +6,7 @@ var ground;
 var emitter;
 var rCDTimer;
 var gZeroTimer;
+var deadPoint = null;
 
 //game data
 var goldNum = 300;
@@ -27,6 +28,14 @@ var itemData;
 var bgm;
 var bubblesMusic;
 var oceanBaseMusic;
+var pickGoldSFX;
+var victorySFX;
+
+//collision groups
+var playerColGroup
+var groundColGroup
+var itemsColGroup
+var deadColGroup
 
 var Game = {
 
@@ -41,8 +50,8 @@ var Game = {
         game.load.image('particle', 'images/temp/particle.png');
         game.load.image('item', 'images/Art/Environment/Assets/ENV_GoldCoin.png');
         game.load.image('chest', 'images/Art/Environment/Assets/ENV_GoldChest.png');
-        game.load.image('chestS', 'images/temp/chestS.png');
-        game.load.image('chestL', 'images/temp/chestL.png');
+        game.load.image('deathMarker', 'images/Art/Environment/Assets/Tumb_1.png');
+
 
         //load physics
         for(var i = 0; i < 7; i++)
@@ -56,14 +65,12 @@ var Game = {
         //load music
         game.load.audio('bgm', 'audio/background/bg_music.mp3');
         game.load.audio('bubblesMusic', 'audio/background/bg_bubbles.wav');
-        game.load.audio('oceanBaseMusic', 'audio/background/SFX_GoldPickUp.wav');
-        game.load.audio('pickGold', 'audio/background/bg_ocean_base.wav')
-        game.load.audio('pickGold', 'audio/background/SFX_Victory.wav')
-        
+        game.load.audio('oceanBaseMusic', 'audio/background/bg_ocean_base.wav');
+        game.load.audio('pickGold', 'audio/SFX/SFX_GoldPickUp.wav')
+        game.load.audio('victory', 'audio/SFX/SFX_Victory.wav')
+
         //load json
         game.load.json('itemData', 'js/Treasure_coord_gold.json');
-
-
 
     },
 
@@ -81,9 +88,10 @@ var Game = {
         game.physics.p2.setImpactEvents(true);
         game.physics.p2.defaultRestitution = 0.8;
         game.physics.p2.gravity.y = 10;
-        var playerColGroup = game.physics.p2.createCollisionGroup();
-        var groundColGroup = game.physics.p2.createCollisionGroup();
-        var itemsColGroup = game.physics.p2.createCollisionGroup();
+        playerColGroup = game.physics.p2.createCollisionGroup();
+        groundColGroup = game.physics.p2.createCollisionGroup();
+        itemsColGroup = game.physics.p2.createCollisionGroup();
+        deadColGroup = game.physics.p2.createCollisionGroup();
         game.physics.p2.updateBoundsCollisionGroup();
 
         game.physics.p2.enable(player, false);
@@ -109,6 +117,7 @@ var Game = {
 
         player.body.collides(groundColGroup, colCallback, this);
         player.body.collides(itemsColGroup, itemsCallback, this);
+        player.body.collides(deadColGroup, deadPointCallback, this);
         ground.body.collides(playerColGroup);        
 
         //init player
@@ -135,11 +144,6 @@ var Game = {
         emitter.bounce.y = 0.5;
         emitter.gravity = 0;
         emitter.start(false, 200, 5, 0, false); 
-
-        //init time
-        // timer = game.time.create(false);
-        // timer.loop(Phaser.Timer.SECOND * 3, updateTime, this);
-
 
         //init arraies
         itemData = game.cache.getJSON('itemData');
@@ -181,6 +185,13 @@ var Game = {
         oceanBaseMusic = game.add.audio('oceanBaseMusic');
         oceanBaseMusic.allowMultiple = true;
         oceanBaseMusic.play();
+
+        pickGoldSFX = game.add.audio('pickGold');
+        pickGoldSFX.allowMultiple = true;
+
+        //dead point
+
+
 
     },
 
@@ -289,6 +300,24 @@ function rebirth(){
 
 function crash(){
 
+    if(deadPoint == null){
+        deadPoint = game.add.sprite(player.x, player.y, 'deathMarker');
+        game.physics.p2.enable(deadPoint, false);
+        deadPoint.body.clearShapes();
+        deadPoint.body.setCircle(32);
+        deadPoint.body.data.gravityScale = 0;
+        deadPoint.body.setCollisionGroup(deadColGroup);
+        deadPoint.body.collides(playerColGroup);
+
+        deadPoint.amount = goldNum;
+    }
+    else{
+
+        deadPoint.reset(player.x, player.y);
+        deadPoint.amount = goldNum;
+
+    }
+
     game.camera.shake(0.1, 100);
     player.lives -= 1;
     player.kill();
@@ -333,8 +362,18 @@ function itemsCallback(body1, body2){
 
     console.log("get item");
     goldNum += body2.sprite.amount;
+    pickGoldSFX.play();
     body2.sprite.text.kill();
     body2.sprite.kill();
     
+
+}
+
+function deadPointCallback(body1, body2){
+
+    console.log("pick dead");
+    goldNum += body2.sprite.amount;
+    pickGoldSFX.play();
+    body2.sprite.kill();
 
 }
