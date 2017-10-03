@@ -9,6 +9,7 @@ var gZeroTimer;
 
 //game data
 var goldNum = 300;
+var lastNum = 0;
 //var time = 0;
 
 //temp var
@@ -34,8 +35,9 @@ var Game = {
         //load images    
         game.load.image('bg', 'images/Art/Environment/Maps/Level_Design_Layout_full_v2.png');
         game.load.image('ground', 'images/Art/Environment/Maps/Level_Design_Layout_outline_v2_2.png');
-        game.load.image('player', 'images/Art/Player/PLA_Default.png'); 
-        game.load.image('player2', 'images/Art/Player/player.png') 
+        game.load.image('player', 'images/Art/Player/Sub.png'); 
+        game.load.image('player2', 'images/Art/Player/Sub_A.png') 
+        game.load.image('player3', 'images/Art/Player/Sub_B.png'); 
         game.load.image('particle', 'images/temp/particle.png');
         game.load.image('item', 'images/Art/Environment/Assets/ENV_GoldCoin.png');
         game.load.image('chest', 'images/Art/Environment/Assets/ENV_GoldChest.png');
@@ -54,8 +56,10 @@ var Game = {
         //load music
         game.load.audio('bgm', 'audio/background/bg_music.mp3');
         game.load.audio('bubblesMusic', 'audio/background/bg_bubbles.wav');
-        game.load.audio('oceanBaseMusic', 'audio/background/bg_ocean_base.wav');
-
+        game.load.audio('oceanBaseMusic', 'audio/background/SFX_GoldPickUp.wav');
+        game.load.audio('pickGold', 'audio/background/bg_ocean_base.wav')
+        game.load.audio('pickGold', 'audio/background/SFX_Victory.wav')
+        
         //load json
         game.load.json('itemData', 'js/Treasure_coord_gold.json');
 
@@ -124,7 +128,7 @@ var Game = {
         inputManager.create();    
 
         //init particle
-        emitter = game.add.emitter(player.x - Math.sin(player.body.rotation) * 24, player.y + Math.cos(player.body.rotation) * 24, 100);
+        emitter = game.add.emitter(player.x - Math.sin(player.body.rotation) * 30, player.y + Math.cos(player.body.rotation) * 30, 100);
         emitter.makeParticles('particle');
         emitter.minParticleScale = 0.5;
         emitter.maxParticleScale = 1.5;
@@ -144,7 +148,7 @@ var Game = {
         for(var i = 0; i < itemData.length; i++){
 
             var item = items.create(parseInt(itemData[i].x), parseInt(itemData[i].y) - 20, 'item');
-            game.physics.p2.enable(item, true);
+            game.physics.p2.enable(item, false);
             item.body.clearShapes();
             item.body.setCircle(32);
             item.body.data.gravityScale = 0;
@@ -264,9 +268,20 @@ function rebirth(){
 
     console.log("rebirth");
 
+    if(player.lives == 2)
+        player.loadTexture('player2', 0);
+    else if(player.lives == 1)
+        player.loadTexture('player3', 0);
+
     player.reset(800, 800);
     player.fuel = 3000;
     player.engineLevel = 0;
+
+    items.forEach(function reset(item){
+
+        item.reset(item.x, item.y);
+
+    });
 
     speedText.alpha = 100;
 
