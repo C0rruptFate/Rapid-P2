@@ -225,8 +225,6 @@ var Game = {
 
         }
 
-
-
         //init texts
         texts.create();
 
@@ -256,11 +254,6 @@ var Game = {
 
         pickGoldSFX = game.add.audio('pickGold');
         pickGoldSFX.allowMultiple = true;
-
-
-
-
-
 
     },
 
@@ -309,13 +302,14 @@ var Game = {
         emitter.setYSpeed(0, Math.cos(player.body.rotation) * 100 * player.engineLevel);
 
         //check gameover
-        if(player.fuel <= 0){
+        if(player.fuel <= 0)
+        {
+            player.lives -= 1;
 
             if(player.lives > 0)
                 rebirth();
             else
-                gameOver();
-        
+                gameOver();        
         }
 
         //Animation
@@ -344,7 +338,7 @@ function rebirth(){
     rebirthUI();
 
     player.reset(PLAYER_DEFAULT_X, PLAYER_DEFAULT_Y);
-    player.fuel = PLAYER_DEFAULT_X;
+    player.fuel = PLAYER_DEFAULT_FUEL;
     player.engineLevel = 0;
 
     items.forEach(function reset(item){
