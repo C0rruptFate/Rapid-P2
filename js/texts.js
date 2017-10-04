@@ -29,9 +29,9 @@ var texts = {
         // fuel.fixedToCamera = true;
         // //fuel.cssFont = "Aquatico-Regular";
 
-        fuelText = game.add.text(1520, 800, '0', { font:'Aquatico-Regular', fontSize:'35px', fill:'#043951'});
-        fuelText.anchor.setTo(0.5, 0);
-        fuelText.fixedToCamera = true;
+        // fuelText = game.add.text(1520, 800, '0', { font:'Aquatico-Regular', fontSize:'35px', fill:'#043951'});
+        // fuelText.anchor.setTo(0.5, 0);
+        // fuelText.fixedToCamera = true;
         //fuelText.cssFont = "Aquatico-Regular";
 
         // speedXText = game.add.text(player.x + 30, player.y - 30, 'Vx: 0', {fontSize:'14px', fill:'#eeeeee'});
@@ -48,7 +48,7 @@ var texts = {
 	update: function(){
 		
 		goldText.text = '$' + goldNum + 'M';
-        fuelText.text = parseInt(player.fuel);
+        // fuelText.text = parseInt(player.fuel);
         speedText.reset(player.x + 35, player.y - 35);
         // speedXText.reset(player.x + 30, player.y - 30);
         // speedXText.text = 'Vx: ' + parseInt(player.body.velocity.x);

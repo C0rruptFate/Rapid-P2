@@ -7,8 +7,10 @@ var emitter;
 var rCDTimer;
 var gZeroTimer;
 var deadPoint = null;
+
 var fuelBar;
 var fuelBarRect;
+var fuelCostRate;
 
 //game data
 var goldNum = 0;
@@ -197,7 +199,7 @@ var Game = {
             if(itemData[i].type == 1)
             {
                 item = items.create(parseInt(itemData[i].x), parseInt(itemData[i].y) - 20, 'item');
-                item.tween = game.add.tween(item).to({x: 1560, y: 50}, 1000, "Quart.easeOut");
+                //item.tween = game.add.tween(item).to({x: 1560, y: 50}, 1000, "Quart.easeOut");
                 item.glitter = game.add.sprite(item.x, item.y, 'glitter');
                 //item.glitter.scale.setTo(0.5, 0.5);
                 item.glitter.animations.add('glit');
@@ -259,8 +261,8 @@ var Game = {
         //fuelbar
         fuelBar = game.add.sprite(1540, 640, 'fuelBar');
         fuelBar.fixedToCamera = true;
-        fuelBarRect = new Phaser.Rectangle(fuelBar.x, fuelBar.y, fuelBar.width, fuelBar.height);
-        fuelBarRect.fixedToCamera = true;
+        //fuelBar.anchor.setTo(0.5, 1);
+        fuelBarRect = new Phaser.Rectangle(0, 0, fuelBar.width, fuelBar.height);
         fuelBar.crop(fuelBarRect);
 
     },
@@ -338,6 +340,23 @@ var Game = {
             //     console.log("change texture");
             // }
         }
+
+
+        fuelCostRate = (3000 - player.fuel) / 3000;
+
+
+        fuelBarRect.y += fuelCostRate;
+        var y = fuelBar.y;
+        fuelBar.cameraOffset.y += fuelCostRate;
+        //console.log(fuelBar.y);
+        fuelBar.updateCrop();
+
+    },
+
+    render: function()
+    {
+
+        //game.debug.geom(fuelBarRect, "#ffffff");
 
     }
         
@@ -462,14 +481,23 @@ function itemsCallback(body1, body2){
     if(body2.sprite.type == 1)
     {
         goldNum += body2.sprite.amount;
-        body2.sprite.glitter.kill();
-        body2.sprite.kill();
-        // body2.sprite.tween.start();
-        // body2.sprite.tween.onComplete.add(function killCoin(){
+        // body2.clearShapes();
+        // var tween = game.add.tween(body2.sprite).to({y: 50}, 1000, "Quart.easeOut");
+        // tween.start();
+        // tween.onStart.add(function tweenStart()
+        // {
+        //     console.log('start');
+        // },this)
+        // tween.onComplete.add(function killCoin(){
 
+        //     console.log('killCoin');
         //     body2.sprite.kill();
 
         // }, this);
+
+        body2.sprite.glitter.kill();
+        body2.sprite.kill();
+
     }
     else if(body2.sprite.type == 2)
     {
