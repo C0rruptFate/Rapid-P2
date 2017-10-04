@@ -201,10 +201,11 @@ var Game = {
                 item = items.create(parseInt(itemData[i].x), parseInt(itemData[i].y) - 20, 'item');
                 //item.tween = game.add.tween(item).to({x: 1560, y: 50}, 1000, "Quart.easeOut");
                 item.glitter = game.add.sprite(item.x, item.y, 'glitter');
-                //item.glitter.scale.setTo(0.5, 0.5);
+                item.glitter.scale.setTo(0.8, 0.8);
                 item.glitter.animations.add('glit');
                 item.glitter.animations.play('glit', 100, true);
                 item.glitter.anchor.set(0.5, 0.5);
+                item.scale.setTo(0.5, 0.5);
             }
             else if(itemData[i].type == 2)
             {
@@ -291,6 +292,11 @@ var Game = {
         player.body.velocity.y += Math.cos(player.body.rotation) * (-0.2) * player.engineLevel;
         player.body.velocity.x += Math.sin(player.body.rotation) * (0.2) * player.engineLevel;
         player.fuel -= 0.5 * player.engineLevel;
+        fuelCostRate = (0.5 * player.engineLevel) / 3000;
+        fuelBarRect.y += fuelCostRate * fuelBarRect.height;
+        fuelBar.cameraOffset.y += fuelCostRate * fuelBarRect.height;
+        fuelBar.updateCrop();
+
 
         prevSpeed = speed;
         speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));        
@@ -342,14 +348,6 @@ var Game = {
         }
 
 
-        fuelCostRate = (3000 - player.fuel) / 3000;
-
-
-        fuelBarRect.y += fuelCostRate;
-        var y = fuelBar.y;
-        fuelBar.cameraOffset.y += fuelCostRate;
-        //console.log(fuelBar.y);
-        fuelBar.updateCrop();
 
     },
 
@@ -382,6 +380,9 @@ function rebirth(){
 
     player.reset(PLAYER_DEFAULT_X, PLAYER_DEFAULT_Y);
     player.fuel = PLAYER_DEFAULT_FUEL;
+    fuelCostRate = (3000 - player.fuel) / 3000;
+    fuelBarRect.y = 0;
+    fuelBar.cameraOffset.y = 640;
     player.engineLevel = 0;
 
     items.forEach(function reset(item){
@@ -420,6 +421,7 @@ function crash(){
 
     game.camera.shake(0.1, 100);
     player.lives -= 1;
+    player.engineLevel = 0;
     player.kill();
     speedText.alpha = 0;
 
