@@ -8,6 +8,10 @@ var rCDTimer;
 var gZeroTimer;
 var deadPoint = null;
 
+var fuelBar;
+var fuelBarRect;
+var fuelCostRate;
+
 //game data
 var goldNum = 0;
 var lastNum = 0;
@@ -20,6 +24,8 @@ var prevSpeed = 0;
 //arraies
 var items;
 var itemData;
+var fishes;
+var fishData;
 
 //animations
 var playerAlertAnime = new Array();
@@ -57,6 +63,7 @@ var Game = {
         game.load.image('deathMarker', 'images/Art/Environment/Assets/Tumb_1.png');
         game.load.image('lifeOn', 'images/Art/GUI/lifeOn.png');
         game.load.image('lifeOff', 'images/Art/GUI/lifeOff.png');
+        game.load.image('fuelBar', 'images/Art/GUI/fuelGauge.png')
 
         //load physics
         for(var i = 0; i < 7; i++)
@@ -66,10 +73,10 @@ var Game = {
 
         //load animation
         game.load.spritesheet('crash', 'images/Art/VFX/Explosion2.0/VFX_ExplosionSpriteSheet 85x200 - 72', 85, 200, 72);
-        game.load.spritesheet('glitter', 'images/Art/VFX/GoldGlitter/VFX_GoldBrighterSpriteSheet 185x185 - 71.png', 185, 185, 71);
-        game.load.spritesheet('alert1', 'images/Art/Player/Sub_warnning_sprite.png', 64, 93, 4);
-        game.load.spritesheet('alert2', 'images/Art/Player/Sub_A_warnning_sprite.png', 64, 93, 4);
-        game.load.spritesheet('alert3', 'images/Art/Player/Sub_B_warnning_sprite.png', 64, 93, 4);
+        game.load.spritesheet('glitter', 'images/Art/VFX/GoldGlitter/VFX_GoldBrighterSpriteSheet 92x92 - 71.png', 92, 92, 71);
+        game.load.spritesheet('alert1', 'images/Art/Player/sub_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
+        game.load.spritesheet('alert2', 'images/Art/Player/Sub_A_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
+        game.load.spritesheet('alert3', 'images/Art/Player/Sub_B_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
 
         //load music
         game.load.audio('bgm', 'audio/background/bg_music.mp3');
@@ -80,15 +87,40 @@ var Game = {
 
         //load json
         game.load.json('itemData', 'js/Treasure_coord_gold.json');
+        game.load.json('fishData', 'js/fish.json');
+
+        //load fishes
+        game.load.image('fish1', 'images/Art/Environment/Assets/ENV_angler.png');
+        game.load.image('fish2', 'images/Art/Environment/Assets/ENV_eel_v2.png');
+        game.load.image('fish3', 'images/Art/Environment/Assets/ENV_SunFish.png');
+        game.load.spritesheet('fish4', 'images/Art/VFX/FishSchool/VFX_FishSchoolSpriteSheet 813x317 - 36.png', 813, 317, 36);
+
 
     },
 
     create: function () {
 
         game.world.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT);
-
-        //set sprites 
         bg = game.add.tileSprite(0, 0, MAP_WIDTH, MAP_HEIGHT, 'bg');
+
+        //fishes
+        fishes = game.add.group();
+        fishData = game.cache.getJSON('fishData');
+        for(var i = 0; i < fishData.length; i++)
+        {
+            var fish;
+            fish = fishes.create(parseInt(fishData[i].x), parseInt(fishData[i].y), 'fish' + fishData[i].type);
+            fish.alpha = 0.8;
+            if(fishData[i].type == 4)
+            {
+                fish.scale.setTo(0.5, 0.5);
+                fish.animations.add('swim');
+                fish.animations.play('swim', 60, true);
+            }
+
+        }
+
+        //set sprites         
         ground = game.add.sprite(MAP_WIDTH / 2, MAP_HEIGHT / 2, 'ground');
         player = game.add.sprite(PLAYER_DEFAULT_X, PLAYER_DEFAULT_Y, 'alert1');
 
@@ -142,6 +174,7 @@ var Game = {
         player.lives = 3;
         player.engineLevel = 0;
         player.isMoving = false;
+        player.isAlert = false;
 
         //init input
         inputManager.create();    
@@ -166,11 +199,13 @@ var Game = {
             if(itemData[i].type == 1)
             {
                 item = items.create(parseInt(itemData[i].x), parseInt(itemData[i].y) - 20, 'item');
-                item.tween = game.add.tween(item).to({x: 1560, y: 50}, 1000, "Quart.easeOut");
+                //item.tween = game.add.tween(item).to({x: 1560, y: 50}, 1000, "Quart.easeOut");
                 item.glitter = game.add.sprite(item.x, item.y, 'glitter');
+                item.glitter.scale.setTo(0.8, 0.8);
                 item.glitter.animations.add('glit');
                 item.glitter.animations.play('glit', 100, true);
                 item.glitter.anchor.set(0.5, 0.5);
+                item.scale.setTo(0.5, 0.5);
             }
             else if(itemData[i].type == 2)
             {
@@ -201,15 +236,7 @@ var Game = {
         texts.create();
 
         //set camera
-        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
-
-        //init animation
-        for(i = 0; i < 3; i++){
-            //playerAlertAnime[i] = game.add.
-        }
-
-        player.animations.add('default');
-        player.animations.play('default', 5000, true);
+        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);        
     
         //init music
         bgm = game.add.audio('bgm');
@@ -227,9 +254,17 @@ var Game = {
         pickGoldSFX = game.add.audio('pickGold');
         pickGoldSFX.allowMultiple = true;
 
-        //dead point
 
+        //animations
+        player.animations.add('alert');
+        player.animations.play('alert', 10, true);
 
+        //fuelbar
+        fuelBar = game.add.sprite(1540, 640, 'fuelBar');
+        fuelBar.fixedToCamera = true;
+        //fuelBar.anchor.setTo(0.5, 1);
+        fuelBarRect = new Phaser.Rectangle(0, 0, fuelBar.width, fuelBar.height);
+        fuelBar.crop(fuelBarRect);
 
     },
 
@@ -257,6 +292,11 @@ var Game = {
         player.body.velocity.y += Math.cos(player.body.rotation) * (-0.2) * player.engineLevel;
         player.body.velocity.x += Math.sin(player.body.rotation) * (0.2) * player.engineLevel;
         player.fuel -= 0.5 * player.engineLevel;
+        fuelCostRate = (0.5 * player.engineLevel) / 3000;
+        fuelBarRect.y += fuelCostRate * fuelBarRect.height;
+        fuelBar.cameraOffset.y += fuelCostRate * fuelBarRect.height;
+        fuelBar.updateCrop();
+
 
         prevSpeed = speed;
         speed = Math.sqrt(Math.pow(player.body.velocity.x, 2) + Math.pow(player.body.velocity.y, 2));        
@@ -278,17 +318,43 @@ var Game = {
         emitter.setYSpeed(0, Math.cos(player.body.rotation) * 100 * player.engineLevel);
 
         //check gameover
-        if(player.fuel <= 0){
+        if(player.fuel <= 0)
+        {
+            player.lives -= 1;
 
             if(player.lives > 0)
                 rebirth();
             else
-                gameOver();
-        
+                gameOver();        
         }
 
-        //Animation
-        
+        if(speed > CRASH_SPEED){
+
+            if(player.isAlert == false)
+            {
+                player.loadTexture('alert1', 0);
+                player.isAlert = true;
+                console.log("change texture");
+            }
+        }
+        else{
+
+            // if(player.isAlert == true)
+            // {
+            //     player.loadTexture('player', 0);
+            //     player.isAlert = false;
+            //     console.log("change texture");
+            // }
+        }
+
+
+
+    },
+
+    render: function()
+    {
+
+        //game.debug.geom(fuelBarRect, "#ffffff");
 
     }
         
@@ -313,7 +379,10 @@ function rebirth(){
     rebirthUI();
 
     player.reset(PLAYER_DEFAULT_X, PLAYER_DEFAULT_Y);
-    player.fuel = PLAYER_DEFAULT_X;
+    player.fuel = PLAYER_DEFAULT_FUEL;
+    fuelCostRate = (3000 - player.fuel) / 3000;
+    fuelBarRect.y = 0;
+    fuelBar.cameraOffset.y = 640;
     player.engineLevel = 0;
 
     items.forEach(function reset(item){
@@ -352,6 +421,7 @@ function crash(){
 
     game.camera.shake(0.1, 100);
     player.lives -= 1;
+    player.engineLevel = 0;
     player.kill();
     speedText.alpha = 0;
 
@@ -413,14 +483,23 @@ function itemsCallback(body1, body2){
     if(body2.sprite.type == 1)
     {
         goldNum += body2.sprite.amount;
-        body2.sprite.glitter.kill();
-        body2.sprite.kill();
-        // body2.sprite.tween.start();
-        // body2.sprite.tween.onComplete.add(function killCoin(){
+        // body2.clearShapes();
+        // var tween = game.add.tween(body2.sprite).to({y: 50}, 1000, "Quart.easeOut");
+        // tween.start();
+        // tween.onStart.add(function tweenStart()
+        // {
+        //     console.log('start');
+        // },this)
+        // tween.onComplete.add(function killCoin(){
 
+        //     console.log('killCoin');
         //     body2.sprite.kill();
 
         // }, this);
+
+        body2.sprite.glitter.kill();
+        body2.sprite.kill();
+
     }
     else if(body2.sprite.type == 2)
     {

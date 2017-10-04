@@ -10,7 +10,7 @@ var PLAYER_DEFAULT_FUEL = 3000;
 //var PLAYER_DEFAUIT_GOLD = 0;
 
 
-var CRASH_SPEED = 75;
+var CRASH_SPEED = 60;
 
 var PI = 3.1416;
 var R = 180/PI;
