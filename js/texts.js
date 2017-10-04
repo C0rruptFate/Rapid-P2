@@ -63,13 +63,19 @@ var texts = {
             // speedXText.style.fill = "#ee0000";
             // speedYText.style.fill = "#ee0000";
             speedText.style.fill = "#ee0000";
-            //player.loadTexture('alert2');
             //player.animations.play('default', 5000, true);
+
         }
         else{
         	// speedXText.style.fill = "#eeeeee";
             // speedYText.style.fill = "#eeeeee";
             speedText.style.fill = "#eeeeee";
+            // if(player.isAlert == true)
+            // {
+            // 	player.loadTexture('player');
+            // 	player.isAlert = false;
+            // 	console.log("change texture");
+            // }
         }
 
 	}

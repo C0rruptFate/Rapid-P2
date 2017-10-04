@@ -7,6 +7,8 @@ var emitter;
 var rCDTimer;
 var gZeroTimer;
 var deadPoint = null;
+var fuelBar;
+var fuelBarRect;
 
 //game data
 var goldNum = 0;
@@ -59,6 +61,7 @@ var Game = {
         game.load.image('deathMarker', 'images/Art/Environment/Assets/Tumb_1.png');
         game.load.image('lifeOn', 'images/Art/GUI/lifeOn.png');
         game.load.image('lifeOff', 'images/Art/GUI/lifeOff.png');
+        game.load.image('fuelBar', 'images/Art/GUI/fuelGauge.png')
 
         //load physics
         for(var i = 0; i < 7; i++)
@@ -68,10 +71,10 @@ var Game = {
 
         //load animation
         game.load.spritesheet('crash', 'images/Art/VFX/Explosion2.0/VFX_ExplosionSpriteSheet 85x200 - 72', 85, 200, 72);
-        game.load.spritesheet('glitter', 'images/Art/VFX/GoldGlitter/VFX_GoldBrighterSpriteSheet 185x185 - 71.png', 185, 185, 71);
-        game.load.spritesheet('alert1', 'images/Art/Player/Sub_warnning_sprite.png', 64, 93, 4);
-        game.load.spritesheet('alert2', 'images/Art/Player/Sub_A_warnning_sprite.png', 64, 93, 4);
-        game.load.spritesheet('alert3', 'images/Art/Player/Sub_B_warnning_sprite.png', 64, 93, 4);
+        game.load.spritesheet('glitter', 'images/Art/VFX/GoldGlitter/VFX_GoldBrighterSpriteSheet 92x92 - 71.png', 92, 92, 71);
+        game.load.spritesheet('alert1', 'images/Art/Player/sub_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
+        game.load.spritesheet('alert2', 'images/Art/Player/Sub_A_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
+        game.load.spritesheet('alert3', 'images/Art/Player/Sub_B_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
 
         //load music
         game.load.audio('bgm', 'audio/background/bg_music.mp3');
@@ -169,6 +172,7 @@ var Game = {
         player.lives = 3;
         player.engineLevel = 0;
         player.isMoving = false;
+        player.isAlert = false;
 
         //init input
         inputManager.create();    
@@ -195,7 +199,7 @@ var Game = {
                 item = items.create(parseInt(itemData[i].x), parseInt(itemData[i].y) - 20, 'item');
                 item.tween = game.add.tween(item).to({x: 1560, y: 50}, 1000, "Quart.easeOut");
                 item.glitter = game.add.sprite(item.x, item.y, 'glitter');
-                item.glitter.scale.setTo(0.5, 0.5);
+                //item.glitter.scale.setTo(0.5, 0.5);
                 item.glitter.animations.add('glit');
                 item.glitter.animations.play('glit', 100, true);
                 item.glitter.anchor.set(0.5, 0.5);
@@ -229,15 +233,7 @@ var Game = {
         texts.create();
 
         //set camera
-        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
-
-        //init animation
-        for(i = 0; i < 3; i++){
-            //playerAlertAnime[i] = game.add.
-        }
-
-        player.animations.add('default');
-        player.animations.play('default', 5000, true);
+        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);        
     
         //init music
         bgm = game.add.audio('bgm');
@@ -254,6 +250,18 @@ var Game = {
 
         pickGoldSFX = game.add.audio('pickGold');
         pickGoldSFX.allowMultiple = true;
+
+
+        //animations
+        player.animations.add('alert');
+        player.animations.play('alert', 10, true);
+
+        //fuelbar
+        fuelBar = game.add.sprite(1540, 640, 'fuelBar');
+        fuelBar.fixedToCamera = true;
+        fuelBarRect = new Phaser.Rectangle(fuelBar.x, fuelBar.y, fuelBar.width, fuelBar.height);
+        fuelBarRect.fixedToCamera = true;
+        fuelBar.crop(fuelBarRect);
 
     },
 
@@ -312,8 +320,24 @@ var Game = {
                 gameOver();        
         }
 
-        //Animation
-        
+        if(speed > CRASH_SPEED){
+
+            if(player.isAlert == false)
+            {
+                player.loadTexture('alert1', 0);
+                player.isAlert = true;
+                console.log("change texture");
+            }
+        }
+        else{
+
+            // if(player.isAlert == true)
+            // {
+            //     player.loadTexture('player', 0);
+            //     player.isAlert = false;
+            //     console.log("change texture");
+            // }
+        }
 
     }
         
