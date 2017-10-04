@@ -20,6 +20,8 @@ var prevSpeed = 0;
 //arraies
 var items;
 var itemData;
+var fishes;
+var fishData;
 
 //animations
 var playerAlertAnime = new Array();
@@ -80,15 +82,40 @@ var Game = {
 
         //load json
         game.load.json('itemData', 'js/Treasure_coord_gold.json');
+        game.load.json('fishData', 'js/fish.json');
+
+        //load fishes
+        game.load.image('fish1', 'images/Art/Environment/Assets/ENV_angler.png');
+        game.load.image('fish2', 'images/Art/Environment/Assets/ENV_eel_v2.png');
+        game.load.image('fish3', 'images/Art/Environment/Assets/ENV_SunFish.png');
+        game.load.spritesheet('fish4', 'images/Art/VFX/FishSchool/VFX_FishSchoolSpriteSheet 813x317 - 36.png', 813, 317, 36);
+
 
     },
 
     create: function () {
 
         game.world.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT);
-
-        //set sprites 
         bg = game.add.tileSprite(0, 0, MAP_WIDTH, MAP_HEIGHT, 'bg');
+
+        //fishes
+        fishes = game.add.group();
+        fishData = game.cache.getJSON('fishData');
+        for(var i = 0; i < fishData.length; i++)
+        {
+            var fish;
+            fish = fishes.create(parseInt(fishData[i].x), parseInt(fishData[i].y), 'fish' + fishData[i].type);
+            fish.alpha = 0.8;
+            if(fishData[i].type == 4)
+            {
+                fish.scale.setTo(0.5, 0.5);
+                fish.animations.add('swim');
+                fish.animations.play('swim', 60, true);
+            }
+
+        }
+
+        //set sprites         
         ground = game.add.sprite(MAP_WIDTH / 2, MAP_HEIGHT / 2, 'ground');
         player = game.add.sprite(PLAYER_DEFAULT_X, PLAYER_DEFAULT_Y, 'alert1');
 
@@ -168,6 +195,7 @@ var Game = {
                 item = items.create(parseInt(itemData[i].x), parseInt(itemData[i].y) - 20, 'item');
                 item.tween = game.add.tween(item).to({x: 1560, y: 50}, 1000, "Quart.easeOut");
                 item.glitter = game.add.sprite(item.x, item.y, 'glitter');
+                item.glitter.scale.setTo(0.5, 0.5);
                 item.glitter.animations.add('glit');
                 item.glitter.animations.play('glit', 100, true);
                 item.glitter.anchor.set(0.5, 0.5);
@@ -196,6 +224,8 @@ var Game = {
             item.amount = itemData[i].amount1;               
 
         }
+
+
 
         //init texts
         texts.create();
@@ -227,7 +257,8 @@ var Game = {
         pickGoldSFX = game.add.audio('pickGold');
         pickGoldSFX.allowMultiple = true;
 
-        //dead point
+
+
 
 
 
