@@ -350,12 +350,13 @@ var Game = {
         //check gameover
         if(player.fuel <= 0)
         {
-            player.lives -= 1;
+           // player.lives -= 1;
+            player.engineLevel = 0;
 
-            if(player.lives > 0)
-                rebirth();
-            else
-                gameOver();        
+            // if(player.lives > 0)
+            //     rebirth();
+            // else
+            //     gameOver();        
         }
 
         if(speed > CRASH_SPEED){
@@ -563,7 +564,7 @@ function colCallback(){
     player.body.velocity.y = 0;
     player.engineLevel = 0;
 
-    if(prevSpeed > CRASH_SPEED)
+    if(prevSpeed > CRASH_SPEED || player.fuel <= 0)
         crash();
 
 }
