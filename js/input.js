@@ -10,7 +10,7 @@ var inputManager = {
 
         game.input.keyboard.addKey(Phaser.Keyboard.UP).onDown.add(function()
         {
-            if(player.engineLevel < 3)
+            if(player.engineLevel < 3 && player.fuel > 0)
                 player.engineLevel++;
             //console.log(player.engineLevel);
         }, this);
