@@ -52,7 +52,7 @@ var Game = {
     preload: function () {
 
         //load images    
-        game.load.image('bg', 'images/Art/Environment/Maps/Level_Design_Layout_full_v3.png');
+        game.load.image('bg', 'images/Art/Environment/Maps/Level_Design_full_v3.png');
         game.load.image('ground', 'images/Art/Environment/Maps/Level_Design_Layout_outline_v4.png');
         //game.load.image('player', 'images/Art/Player/Sub.png'); 
         game.load.image('player2', 'images/Art/Player/Sub_A.png') 
@@ -224,7 +224,7 @@ var Game = {
             {
                 item = items.create(parseInt(itemData[i].x), parseInt(itemData[i].y) - 20, 'chest');
                 item.amount = itemData[i].amount1;
-                item.text = game.add.text(item.x + 25, item.y - 25, item.amount + 'M', { font:'Aquatico-Regular', fontSize:'20px', fill:'#6d5701'});                
+                item.text = game.add.text(item.x + 50, item.y - 25, item.amount + 'M', { font:'Aquatico-Regular', fontSize:'20px', fill:'#cea500'});                
             }
             else
             {
