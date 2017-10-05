@@ -11,6 +11,7 @@ var deadPoint = null;
 var fuelBar;
 var fuelBarRect;
 var fuelCostRate;
+var fuelBarBg;
 
 //game data
 var goldNum = 0;
@@ -61,10 +62,11 @@ var Game = {
         game.load.image('item', 'images/Art/Environment/Assets/ENV_GoldCoin.png');
         game.load.image('chest', 'images/Art/Environment/Assets/chestL.png');
         game.load.image('fuelCan', 'images/Art/Environment/Assets/FuelCan.png');
-        game.load.image('deathMarker', 'images/Art/Environment/Assets/Tumb_1.png');
+        game.load.image('deathMarker', 'images/Art/GUI/deathMarker.png');
         game.load.image('lifeOn', 'images/Art/GUI/lifeOn.png');
         game.load.image('lifeOff', 'images/Art/GUI/lifeOff.png');
-        game.load.image('fuelBar', 'images/Art/GUI/fuelGauge.png')
+        game.load.image('fuelBar', 'images/Art/GUI/fuelGauge.png');
+        game.load.image('fuelBarBg', 'images/Art/GUI/fuelGaugeBackground.png');
 
         //load physics
         for(var i = 0; i < 7; i++)
@@ -270,6 +272,9 @@ var Game = {
         explosionSFX = game.add.audio('explosion');
         explosionSFX.allowMultiple = true;
 
+        victorySFX = game.add.audio('victory');
+        victorySFX.allowMultiple = true;
+
 
         //animations
         player.animations.add('player1', [1]);
@@ -282,11 +287,14 @@ var Game = {
         player.animations.play('player1', 1, true);
 
         //fuelbar
+        fuelBarBg = game.add.sprite(1540, 640, 'fuelBarBg');
+        fuelBarBg.fixedToCamera = true;
         fuelBar = game.add.sprite(1540, 640, 'fuelBar');
         fuelBar.fixedToCamera = true;
         //fuelBar.anchor.setTo(0.5, 1);
         fuelBarRect = new Phaser.Rectangle(0, 0, fuelBar.width, fuelBar.height);
         fuelBar.crop(fuelBarRect);
+
 
     },
 
