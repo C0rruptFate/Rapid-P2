@@ -66,7 +66,7 @@ var Game = {
         game.load.image('lifeOn', 'images/Art/GUI/lifeOn.png');
         game.load.image('lifeOff', 'images/Art/GUI/lifeOff.png');
         game.load.image('fuelBar', 'images/Art/GUI/fuelGauge.png');
-        game.load.image('fuelBarBg', 'images/Art/GUI/fuelGaugeBackground.png');
+        game.load.spritesheet('fuelBarBg', 'images/Art/GUI/fuelGaugeSpriteSheet_34x236 - 12.png', 33, 236, 12);
 
         //load physics
         for(var i = 0; i < 7; i++)
@@ -191,6 +191,8 @@ var Game = {
         player.isMoving = false;
         player.isAlert = false;
 
+
+
         //init input
         inputManager.create();    
 
@@ -289,6 +291,9 @@ var Game = {
         //fuelbar
         fuelBarBg = game.add.sprite(1540, 640, 'fuelBarBg');
         fuelBarBg.fixedToCamera = true;
+        fuelBarBg.animations.add('normal', [1]);
+        fuelBarBg.animations.add('alert', [1, 2, 3, 4, 5, 6]);
+        fuelBarBg.animations.play('normal', 1, true);
         fuelBar = game.add.sprite(1540, 640, 'fuelBar');
         fuelBar.fixedToCamera = true;
         //fuelBar.anchor.setTo(0.5, 1);
@@ -397,6 +402,15 @@ var Game = {
                 player.play('player3', 1, true);
                 player.isAlert = false;
             }
+        }
+
+        if(player.fuel < 1000)
+        {
+            fuelBarBg.animations.play('alert', 20, true);
+        }
+        else
+        {
+            fuelBarBg.animations.play('normal', 1, true);
         }
 
         //update fish
