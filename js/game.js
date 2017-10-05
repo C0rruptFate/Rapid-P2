@@ -258,14 +258,17 @@ var Game = {
         //init music
         bgm = game.add.audio('bgm');
         bgm.allowMultiple = true;
+        bgm.loop = true;
         bgm.play();
 
         bubblesMusic = game.add.audio('bubblesMusic');
         bubblesMusic.allowMultiple = true;
+        bubblesMusic.loop = true;
         bubblesMusic.play();
 
         oceanBaseMusic = game.add.audio('oceanBaseMusic');
         oceanBaseMusic.allowMultiple = true;
+        oceanBaseMusic.loop = true;
         oceanBaseMusic.play();
 
         pickGoldSFX = game.add.audio('pickGold');
