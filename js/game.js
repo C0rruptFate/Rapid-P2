@@ -36,6 +36,7 @@ var bubblesMusic;
 var oceanBaseMusic;
 var pickGoldSFX;
 var victorySFX;
+var explosionSFX;
 
 //collision groups
 var playerColGroup
@@ -53,7 +54,7 @@ var Game = {
         //load images    
         game.load.image('bg', 'images/Art/Environment/Maps/Level_Design_Layout_full_v3.png');
         game.load.image('ground', 'images/Art/Environment/Maps/Level_Design_Layout_outline_v4.png');
-        game.load.image('player', 'images/Art/Player/Sub.png'); 
+        //game.load.image('player', 'images/Art/Player/Sub.png'); 
         game.load.image('player2', 'images/Art/Player/Sub_A.png') 
         game.load.image('player3', 'images/Art/Player/Sub_B.png'); 
         game.load.image('particle', 'images/temp/particle.png');
@@ -72,18 +73,20 @@ var Game = {
         }
 
         //load animation
+        game.load.spritesheet('player', 'images/Art/Player/playerSpriteSheet_warning 64x92.5 - 36.png', 64, 92.5, 36);
         game.load.spritesheet('crash', 'images/Art/VFX/Explosion2.0/VFX_ExplosionSpriteSheet 85x200 - 72', 85, 200, 72);
         game.load.spritesheet('glitter', 'images/Art/VFX/GoldGlitter/VFX_GoldBrighterSpriteSheet 92x92 - 71.png', 92, 92, 71);
-        game.load.spritesheet('alert1', 'images/Art/Player/sub_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
-        game.load.spritesheet('alert2', 'images/Art/Player/Sub_A_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
-        game.load.spritesheet('alert3', 'images/Art/Player/Sub_B_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
+        // game.load.spritesheet('alert1', 'images/Art/Player/sub_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
+        // game.load.spritesheet('alert2', 'images/Art/Player/Sub_A_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
+        // game.load.spritesheet('alert3', 'images/Art/Player/Sub_B_warning_sprite 64x92.5 - 24.png', 64, 92.5, 24);
 
         //load music
         game.load.audio('bgm', 'audio/background/bg_music.mp3');
         game.load.audio('bubblesMusic', 'audio/background/bg_bubbles.wav');
         game.load.audio('oceanBaseMusic', 'audio/background/bg_ocean_base.wav');
-        game.load.audio('pickGold', 'audio/SFX/SFX_GoldPickUp.wav')
-        game.load.audio('victory', 'audio/SFX/SFX_Victory.wav')
+        game.load.audio('pickGold', 'audio/SFX/SFX_GoldPickUp.wav');
+        game.load.audio('victory', 'audio/SFX/SFX_Victory.wav');
+        game.load.audio('explosion', 'audio/SFX/Submarine Sounds/sfx_underwaterExplosion.wav');
 
         //load json
         game.load.json('itemData', 'js/Treasure_coord_gold.json');
@@ -111,18 +114,28 @@ var Game = {
             var fish;
             fish = fishes.create(parseInt(fishData[i].x), parseInt(fishData[i].y), 'fish' + fishData[i].type);
             fish.alpha = 0.8;
+            fish.flip = fishData[i].Flipped;
+            fish.type = fishData[i].type;
+            
+            if(fish.flip == 1)
+                fish.scale.setTo(-1, 1);
+
             if(fishData[i].type == 4)
             {
-                fish.scale.setTo(0.5, 0.5);
+                if(fish.flip == 1)
+                    fish.scale.setTo(-0.5, 0.5);
+                else
+                    fish.scale.setTo(0.5, 0.5);
                 fish.animations.add('swim');
                 fish.animations.play('swim', 60, true);
             }
+
 
         }
 
         //set sprites         
         ground = game.add.sprite(MAP_WIDTH / 2, MAP_HEIGHT / 2, 'ground');
-        player = game.add.sprite(PLAYER_DEFAULT_X, PLAYER_DEFAULT_Y, 'alert1');
+        player = game.add.sprite(PLAYER_DEFAULT_X, PLAYER_DEFAULT_Y, 'player');
 
         //init physics
         game.physics.startSystem(Phaser.Physics.P2JS);
@@ -254,10 +267,19 @@ var Game = {
         pickGoldSFX = game.add.audio('pickGold');
         pickGoldSFX.allowMultiple = true;
 
+        explosionSFX = game.add.audio('explosion');
+        explosionSFX.allowMultiple = true;
+
 
         //animations
-        player.animations.add('alert');
-        player.animations.play('alert', 10, true);
+        player.animations.add('player1', [1]);
+        player.animations.add('alert1', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        player.animations.add('player2', [13]);
+        player.animations.add('alert2', [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]);
+        player.animations.add('player3', [25]);
+        player.animations.add('alert3', [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]);
+        //player.animations.play('alert', 10, true);
+        player.animations.play('player1', 1, true);
 
         //fuelbar
         fuelBar = game.add.sprite(1540, 640, 'fuelBar');
@@ -330,23 +352,84 @@ var Game = {
 
         if(speed > CRASH_SPEED){
 
-            if(player.isAlert == false)
-            {
-                player.loadTexture('alert1', 0);
-                player.isAlert = true;
-                console.log("change texture");
-            }
+            // if(player.isAlert == false)
+            // {
+                if(player.lives == 3)
+                {
+                    player.play('alert1', 20, true);
+                    player.isAlert = true;
+                }
+                else if(player.lives == 2)
+                {
+                    player.play('alert2', 20, true);
+                    player.isAlert = true;
+                }
+                else if(player.lives == 1)
+                {
+                    player.play('alert3', 20, true);
+                    player.isAlert = true;
+                }
+            //}
         }
         else{
 
-            // if(player.isAlert == true)
-            // {
-            //     player.loadTexture('player', 0);
-            //     player.isAlert = false;
-            //     console.log("change texture");
-            // }
+            if(player.lives == 3)
+            {
+                player.play('player1', 1, true);
+                player.isAlert = false;
+            }
+            else if(player.lives == 2)
+            {
+                player.play('player2', 1, true);
+                player.isAlert = false;
+            }
+            else if(player.lives == 1)
+            {
+                player.play('player3', 1, true);
+                player.isAlert = false;
+            }
         }
 
+        //update fish
+
+        fishes.forEach(function swim(fish){
+
+            if(fish.type == 4)
+            {
+                if(fish.flip == 0)
+                {
+                    //console.log("swim left");
+                    if(fish.x >= 50)
+                    {
+                        fish.x -= 1;                    
+                    }
+                    else
+                    {
+                        fish.flip = 1;
+                        if(fish.type == 4)
+                            fish.scale.setTo(-0.5, 0.5);
+                        else
+                            fish.scale.setTo(-1, 1);
+                    }
+                }
+                else if(fish.flip == 1)
+                {   
+                    //console.log("swim right");
+                    if(fish.x <= 1550)
+                    {
+                        fish.x += 1;                    
+                    }
+                    else
+                    {
+                        fish.flip = 0;
+                        if(fish.type == 4)
+                            fish.scale.setTo(0.5, 0.5);
+                        else
+                            fish.scale.setTo(1, 1);
+                    }
+                }
+            }
+        });
 
 
     },
@@ -371,10 +454,10 @@ function rebirth(){
 
     console.log("rebirth");
 
-    if(player.lives == 2)
-        player.loadTexture('player2', 0);
-    else if(player.lives == 1)
-        player.loadTexture('player3', 0);
+    // if(player.lives == 2)
+    //     player.loadTexture('player2', 0);
+    // else if(player.lives == 1)
+    //     player.loadTexture('player3', 0);
 
     rebirthUI();
 
@@ -461,6 +544,8 @@ function crash(){
     crashAnime.scale.setTo(2, 2);
     crashAnime.animations.add('explode');
     crashAnime.animations.play('explode', 60, false);
+
+    explosionSFX.play();
 
 }
 
