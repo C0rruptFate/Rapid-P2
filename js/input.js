@@ -1,5 +1,7 @@
 var input;
 
+var ifWin = false;
+
 var inputManager = {
 
 	create: function()
@@ -43,7 +45,7 @@ var inputManager = {
             	rebirth();
             }
             else{
-            	if(goldNum >= 500){
+            	if(goldNum >= 0){
             		victory();
             	}
             	else
@@ -63,7 +65,7 @@ var inputManager = {
 
 function victory(){
 
-	console.log("victory");
+	ifWin = true;
 	victorySFX.play();
-
+	gameOver();        
 }

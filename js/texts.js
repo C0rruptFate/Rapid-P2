@@ -7,6 +7,7 @@ var speedXText;
 var speedYText;
 var speedText
 
+
 var lifeUI = new Array();
 
 var texts = {
